@@ -19,7 +19,7 @@ from ursina import camera, Vec3
 from tiles.base_tile import BaseTile
 def center_camera(rows, cols):
     # Get the world position of the center tile
-    x, y, z = BaseTile.hex_to_world(rows / 2, cols / 2)
+    x, y, z = BaseTile.hex_t_world(rows / 2, cols / 2)
 
     # Enable perspective projection
     camera.orthographic = False
@@ -46,7 +46,7 @@ def main():
     props.setFullscreen(False)
 
     # Set icon using absolute path for better compatibility
-    icon_path = os.path.abspath('/home/bunibal/PycharmProjects/Mindwar/assets/ui/mindwar_icon.ico')
+    icon_path = os.path.abspath('assets/ui/mindwar_icon.ico')
     if os.path.exists(icon_path):
         props.setIconFilename(icon_path)
     else:
