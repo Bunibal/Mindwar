@@ -1,10 +1,17 @@
 from enum import Enum, auto
 from tiles.terrain_type import TerrainType
 
+ACTION_FIELDS = {
+    TerrainType.GRASSLAND,
+    TerrainType.WETLAND,
+    TerrainType.DESERT
+}
+
 FLAT_TERRAINS = {
     TerrainType.GRASSLAND,
     TerrainType.DESERT,
-    TerrainType.WETLAND
+    TerrainType.WETLAND,
+    TerrainType.WATER
 }
 
 class FeatureType(Enum):

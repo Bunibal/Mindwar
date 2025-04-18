@@ -8,64 +8,38 @@ from pathlib import Path
 street_dir = Path("/home/bunibal/PycharmProjects/Mindwar/assets/models/hex_streets")
 street_dir.mkdir(parents=True, exist_ok=True)
 
-def generate_street_mesh(name, shape='straight'):
+from trimesh.transformations import rotation_matrix
+
+def create_angled_street_fixed(name="street_edge_corner", angle_deg=60, arm_length=1.7, width=0.4, height=0.05):
     scene = Scene()
-    color_gray = np.array([150, 150, 150, 255])
+    color = np.array([139, 69, 19, 255])
 
-    if shape == 'straight':
-        street = box(extents=(1.8, 0.4, 0.05))  # long and thin
-    elif shape == 'curve_small':
-        arc = []
-        steps = 8
-        radius = 0.7
-        width = 0.3
-        for i in range(steps):
-            angle = np.pi / 2 * i / (steps - 1)
-            x = radius * np.cos(angle)
-            y = radius * np.sin(angle)
-            arc.append([x, y])
-        arc = np.array(arc)
-        arc_path = []
-        for offset in [-width/2, width/2]:
-            arc_path.append(np.column_stack([arc[:,0] + offset*np.sin(np.linspace(0, np.pi/2, steps)),
-                                             arc[:,1] - offset*np.cos(np.linspace(0, np.pi/2, steps))]))
-        vertices = np.concatenate(arc_path)
-        z_low = np.zeros((len(vertices)//2, 1))
-        z_high = np.full((len(vertices)//2, 1), 0.05)
-        verts = np.concatenate([np.column_stack([vertices[:len(vertices)//2], z_low]),
-                                np.column_stack([vertices[len(vertices)//2:], z_high])])
-        faces = [[i, i+1, i+2] for i in range(len(verts)-2)]
-        street = Trimesh(vertices=verts, faces=faces, process=False)
+    # Arm 1 (horizontal)
+    box1 = box(extents=(arm_length, width, height))
+    box1.apply_translation([arm_length / 2, 0, 0])
 
-    elif shape == 'curve_large':
-        arc = []
-        steps = 8
-        radius = 1.2
-        width = 0.4
-        for i in range(steps):
-            angle = np.pi / 2 * i / (steps - 1)
-            x = radius * np.cos(angle)
-            y = radius * np.sin(angle)
-            arc.append([x, y])
-        arc = np.array(arc)
-        arc_path = []
-        for offset in [-width/2, width/2]:
-            arc_path.append(np.column_stack([arc[:,0] + offset*np.sin(np.linspace(0, np.pi/2, steps)),
-                                             arc[:,1] - offset*np.cos(np.linspace(0, np.pi/2, steps))]))
-        vertices = np.concatenate(arc_path)
-        z_low = np.zeros((len(vertices)//2, 1))
-        z_high = np.full((len(vertices)//2, 1), 0.05)
-        verts = np.concatenate([np.column_stack([vertices[:len(vertices)//2], z_low]),
-                                np.column_stack([vertices[len(vertices)//2:], z_high])])
-        faces = [[i, i+1, i+2] for i in range(len(verts)-2)]
-        street = Trimesh(vertices=verts, faces=faces, process=False)
+    # Arm 2 (rotated)
+    box2 = box(extents=(arm_length, width, height))
+    box2.apply_translation([arm_length / 2, 0, 0])
 
-    street.visual.vertex_colors = np.tile(color_gray, (len(street.vertices), 1))
-    scene.add_geometry(street)
-    scene.export(file_obj=street_dir / f"{name}.glb", file_type='glb')
+    # Rotation for arm 2
+    angle_rad = np.radians(angle_deg)
+    R = rotation_matrix(angle_rad, [0, 0, 1])  # Rotate around Z axis
+    box2.apply_transform(R)
 
-# Generate the three road types
-generate_street_mesh("street_straight", shape='straight')
-generate_street_mesh("street_curve_small", shape='curve_small')
-generate_street_mesh("street_curve_large", shape='curve_large')
+    # Apply vertex colors
+    box1.visual.vertex_colors = np.tile(color, (len(box1.vertices), 1))
+    box2.visual.vertex_colors = np.tile(color, (len(box2.vertices), 1))
+
+    scene.add_geometry(box1, node_name="arm1")
+    scene.add_geometry(box2, node_name="arm2")
+    scene.export(file_obj=street_dir / f"{name}.glb", file_type="glb")
+
+# Re-run fixed version
+
+create_angled_street_fixed(name="street_curve_large", angle_deg=120)
+create_angled_street_fixed(name="street_curve_small", angle_deg=60)
+create_angled_street_fixed(name="street_straight", angle_deg=180)
+
+
 

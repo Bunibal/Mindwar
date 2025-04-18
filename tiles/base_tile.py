@@ -17,6 +17,8 @@ class BaseTile(Button):
         self.owner = None
         self.has_street = False
         self.street_entity = None  # visual representation
+        self.is_action_field = False
+        self.action_field_highlight = None
 
         model = self.get_model_for_terrain(terrain)
         position = self.hex_to_world(*grid_position)
@@ -81,3 +83,25 @@ class BaseTile(Button):
             TerrainType.DESERT: color.yellow,
             TerrainType.WATER: color.cyan,
         }.get(terrain, color.green)
+
+    def mark_as_action_field(self):
+        if self.is_action_field:
+            return  # already marked
+
+        self.is_action_field = True
+
+        self.action_field_highlight = Entity(
+            parent=self,
+            model='hex',  # same model shape
+            color=color.rgba(255, 255, 0, 128),  # soft yellow glow
+            scale=1,
+            position=(0, 0.05, -0.2),  # slightly above the tile
+            unlit=True
+        )
+
+    def clear_action_field(self):
+        self.is_action_field = False
+        if self.action_field_highlight:
+            destroy(self.action_field_highlight)
+            self.action_field_highlight = None
+

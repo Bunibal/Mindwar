@@ -1,5 +1,6 @@
 from panda3d.core import loadPrcFileData, WindowProperties
 import os
+from game_state import Game_state
 
 # --- Set Panda3D window config BEFORE importing Ursina ---
 loadPrcFileData('', 'window-title Mindwar')
@@ -56,14 +57,8 @@ def main():
     from ursina import application
     application.base.win.requestProperties(props)
 
-    # Generate game content
-    map_manager = MapManager(rows=10, cols=20)
-    map_manager.generate_map()
-
-    # Lighting
-    sun = DirectionalLight()
-    sun.look_at(Vec3(1, -1, -1))
-    AmbientLight(color=color.rgba(120, 120, 120, 0.5))
+    gamestate= Game_state()
+    gamestate.generate_game()
 
     # Camera
     center_camera(10, 20)
