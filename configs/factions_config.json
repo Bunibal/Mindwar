@@ -1,0 +1,136 @@
+{
+  "factions": [
+    {
+      "faction_type": "humans",
+      "description": "The dominant species on Earth, known for their intelligence and adaptability.",
+      "units": [],
+      "buildings": [],
+      "attributes": {
+        "fighting": 5,
+        "gathering": 7,
+        "luck": 6
+      },
+      "resources": [
+        {
+          "name": "gold",
+          "amount": 5
+        },
+        {
+          "name": "wood",
+          "amount": 5
+        },
+        {
+          "name": "stone",
+          "amount": 3
+        },
+        {
+          "name": "food",
+          "amount": 5
+        },
+        {
+          "name": "arcane_power",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "faction_type": "ocrs",
+      "description": "Brutish warriors known for strength and resilience.",
+      "units": [],
+      "buildings": [],
+      "attributes": {
+        "fighting": 5,
+        "gathering": 7,
+        "luck": 6
+      },
+      "resources": [
+        {
+          "name": "gold",
+          "amount": 1
+        },
+        {
+          "name": "wood",
+          "amount": 10
+        },
+        {
+          "name": "stone",
+          "amount": 5
+        },
+        {
+          "name": "food",
+          "amount": 2
+        },
+        {
+          "name": "arcane_power",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "faction_type": "wizards",
+      "description": "A faction of powerful magic users, known for their mastery of arcane arts.",
+      "units": [],
+      "buildings": [],
+      "attributes": {
+        "fighting": 5,
+        "gathering": 7,
+        "luck": 6
+      },
+      "resources": [
+        {
+          "name": "gold",
+          "amount": 2
+        },
+        {
+          "name": "wood",
+          "amount": 2
+        },
+        {
+          "name": "stone",
+          "amount": 1
+        },
+        {
+          "name": "food",
+          "amount": 5
+        },
+        {
+          "name": "arcane_power",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "faction_type": "elves",
+      "description": "A faction of mystical beings, known for their connection to nature and magic.",
+      "units": [],
+      "buildings": [],
+      "attributes": {
+        "fighting": 5,
+        "gathering": 7,
+        "luck": 6
+      },
+      "resources": [
+        {
+          "name": "gold",
+          "amount": 10
+        },
+        {
+          "name": "wood",
+          "amount": 5
+        },
+        {
+          "name": "stone",
+          "amount": 0
+        },
+        {
+          "name": "food",
+          "amount": 4
+        },
+        {
+          "name": "arcane_power",
+          "amount": 5
+        }
+      ]
+    }
+  ]
+}
