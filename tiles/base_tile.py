@@ -16,7 +16,9 @@ class BaseTile(Button):
         self.grid_position = grid_position
         self.owner = None
         self.has_street = False
-        self.street_entity = None  # visual representation
+        self.street_entity = None
+        self.street_rotation = None# visual representation
+        self.street_dirs = [(None, None), (None, None)]
         self.is_action_field = False
         self.action_field_highlight = None
 
@@ -53,6 +55,13 @@ class BaseTile(Button):
         print(f"Clicked tile at row: {q}, col: {r}")
         print(f"Tile world position: {self.x}, {self.y}")
         print(f"Tile terrain: {self.terrain}")
+        print(f"Tile feature: {self.feature}")
+        if self.has_street:
+            print(f"Tile has street: {self.street_entity}")
+            print(f"Street rotation: {self.street_rotation}")
+            print(f"Street directions: {self.street_dirs}")
+            print(f"even: {self.grid_position[0] % 2 == 0}")
+
 
     def get_model_for_terrain(self, terrain):
         return {
