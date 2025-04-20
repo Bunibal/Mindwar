@@ -1,18 +1,17 @@
 from ursina import *
-import json
 import os
-import random
 from game_state import Game_state
 from tiles.base_tile import BaseTile
 from ursina import camera, Vec3
 from map import map_manager
+
 
 class GameManager:
     def __init__(self):
         self.map_manager = None
         self.menu_panel = None
         self.gamestate = Game_state()
-
+        self.gamestate.game_manager = self
         self.start_menu()
 
     def start_menu(self):
@@ -20,8 +19,8 @@ class GameManager:
         self.menu_panel = Entity(
             parent=camera.ui,
             model='quad',
-            texture = 'assets/ui/menu_background.png',
-            scale=(1.6,0.9),
+            texture='assets/ui/menu_background.png',
+            scale=(1.6, 0.9),
             color=color.rgba(50, 50, 50, 180),
             position=(0, 0, 0),
             origin=(0, 0),
@@ -49,7 +48,11 @@ class GameManager:
         self.menu_panel = None
 
         self.generate_random_map()
+        self.map_editor()
+
+    def map_editor(self):
         self.center_camera(10, 20)
+
 
         # Create UI toolbar
         self.editor_toolbar = Entity(parent=camera.ui)
@@ -87,16 +90,22 @@ class GameManager:
         )
 
     def destroy_map(self):
-        destroy(self.editor_toolbar)
+        if self.editor_toolbar:
+            destroy(self.editor_toolbar)
         self.editor_toolbar = None
         for tile in self.gamestate.game_map:
             destroy(tile)
         del self.map_manager
+        self.map_manager = None
         self.gamestate.game_map = []
+        scene.clear()
 
     def return_to_menu(self):
         print("🔙 Returning to Main Menu...")
         self.destroy_map()
+        destroy(self.editor_toolbar)
+        self.editor_toolbar = None
+        self.map_manager = None
         self.start_menu()
 
     def center_camera(self, rows, cols):
@@ -168,23 +177,14 @@ class GameManager:
             on_click=self.close_popup
         )
 
-    def map_toJSON(self, game_state):
-        return json.dumps(
-            game_state.game_map,
-            default=lambda o: o.__dict__,
-            sort_keys=True,
-            indent=4)
-
     def confirm_save(self):
         filename = self.save_input.text.strip()
         if not filename:
             print("⚠️ No filename entered.")
             return
-        map_json = self.map_toJSON(self.gamestate)
         if not os.path.exists('maps'):
             os.makedirs('maps')
-        with open(f'maps/{filename}.json', 'w') as f:
-            f.write(map_json)
+        self.map_manager.save("maps/" + filename + ".json")
         print(f"💾 Map saved to maps/{filename}.json")
         self.close_popup()
 
@@ -247,27 +247,28 @@ class GameManager:
         )
 
     def load_selected_map(self, filepath):
+        if self.map_manager:
+            self.destroy_map()
+        self.map_manager = map_manager.MapManager()
         try:
-            with open(filepath, 'r') as f:
-                map_data = json.load(f)
-            self.gamestate.load_map_data(map_data)
+            self.map_manager.load(filepath)
+            self.gamestate.game_map = self.game_map
+            self.gamestate.game_state = "game"
+
             print(f"📂 Loaded map: {filepath}")
             self.close_popup()
+            self.map_editor()
         except Exception as e:
             print(f"❌ Failed to load map: {e}")
 
     def generate_random_map(self):
-        # Destroy existing map if any
         if self.map_manager:
             self.destroy_map()
-        # Generate game content
         self.map_manager = map_manager.MapManager(rows=10, cols=20)
         self.game_map = self.map_manager.generate_map()
         self.gamestate.game_map = self.game_map
 
-        # Lighting
         sun = DirectionalLight()
         sun.look_at(Vec3(1, -1, -1))
         AmbientLight(color=color.rgba(120, 120, 120, 0.5))
         self.gamestate.game_state = "game"
-

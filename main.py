@@ -12,7 +12,7 @@ loadPrcFileData('', 'window-type none')  # prevent premature window creation
 
 # --- Start the game ---
 from ursina import *
-from game_manager import GameManager  # <-- New game manager class
+from game_manager import GameManager
 
 def main():
     app = Ursina(borderless=False)

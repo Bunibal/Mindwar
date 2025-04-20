@@ -1,3 +1,5 @@
+import json
+
 from matplotlib import pyplot as plt
 from ursina import *
 from tiles.base_tile import BaseTile
@@ -28,7 +30,7 @@ class MapManager:
                 terrain = self.random_terrain()
                 tile = BaseTile(grid_position=(q, r), terrain=terrain)
                 self.tiles.append(tile)
-                if (q,r) in [(1,1), (self.rows-2, self.cols-2), (self.rows-2, 1), (1, self.cols-2)]:
+                if (q, r) in [(1, 1), (self.rows - 2, self.cols - 2), (self.rows - 2, 1), (1, self.cols - 2)]:
                     tile.mark_as_action_field()
                     self.action_fields.append(tile)
         self.action_fields = self.choose_random_action_fields((self.rows, self.cols))
@@ -126,7 +128,7 @@ class MapManager:
                 rotation = HEX_DIRECTIONS_EVEN.index(d2) * 60
             elif not even and angle == 240:
                 rotation = HEX_DIRECTIONS_ODD.index(d2) * 60
-        elif angle in (60,300):  # Tight curve
+        elif angle in (60, 300):  # Tight curve
             model = "assets/models/hex_streets/street_curve_small.glb"
             if even and angle == 60:
                 rotation = HEX_DIRECTIONS_EVEN.index(d1) * 60
@@ -185,9 +187,6 @@ class MapManager:
                 self.street_graph.remove_edge(a, b)
             else:
                 added_edges.append((a, b))
-
-        self.plot_street_graph()
-
 
         tile_directions = self.determine_tile_directions_from_paths()
 
@@ -252,12 +251,12 @@ class MapManager:
     def determine_tile_directions_from_paths(self):
         G = self.build_hex_graph()
         tile_directions = {}  # Use dict because we skip reused tiles anyway
-        used_paths=list()
+        used_paths = list()
 
         def subtract_pos(p1, p2):
             return (p1[0] - p2[0], p1[1] - p2[1])
 
-        def calc_directions(a,b):
+        def calc_directions(a, b):
             start = self.action_fields[a].grid_position
             end = self.action_fields[b].grid_position
 
@@ -293,11 +292,12 @@ class MapManager:
                 G.remove_node(current)  # Remove the node to avoid reusing it
             used_paths.append((start, end))
             used_paths.append((end, start))
+
         for a, b in self.street_graph.edges:
             if (a, b) not in used_paths and (b, a) not in used_paths:
                 calc_directions(a, b)
 
-        used_tiles = list(tile_directions.keys()) # already used tiles
+        used_tiles = list(tile_directions.keys())  # already used tiles
 
         components = list(nx.connected_components(self.street_graph))
         print(f"Components: {len(components)}")
@@ -326,7 +326,6 @@ class MapManager:
                 else:
                     break
 
-        self.plot_hex_paths(tile_directions)
         return tile_directions
 
     def plot_hex_paths(self, tile_directions):
@@ -362,3 +361,40 @@ class MapManager:
         ax.set_aspect('equal')
         plt.title("Hex Tile Paths Through Road Graph")
         plt.show()
+
+
+    def to_dict(self):
+        return {
+            'tiles': [tile.to_dict() for tile in self.tiles],
+            'action_fields': [tile.grid_position for tile in self.action_fields],
+            'street_network': nx.to_dict_of_lists(self.street_graph),
+            'rows': self.rows,
+            'cols': self.cols,
+        }
+
+    def from_dict(self, data):
+        self.tiles = []
+        for tile_data in data['tiles']:
+            tile = BaseTile(**tile_data)
+            tile.from_dict(tile_data)
+            self.tiles.append(tile)
+        self.action_fields = [self.get_tile_by_grid_position(pos) for pos in data['action_fields']]
+        self.street_network = nx.from_dict_of_lists(data['street_network'])
+        self.rows = data['rows']
+        self.cols = data['cols']
+
+    def save(self, filename='map_data.json'):
+        data = self.to_dict()
+        with open(filename, 'w') as f:
+            json.dump(data, f)
+
+    def load(self, filename='map_data.json'):
+        with open(filename, 'r') as f:
+            data = json.load(f)
+            self.from_dict(data)
+
+    def get_tile_by_grid_position(self, pos):
+        for tile in self.tiles:
+            if tile.grid_position == pos:
+                return tile
+        return None
