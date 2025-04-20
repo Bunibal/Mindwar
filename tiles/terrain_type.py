@@ -1,7 +1,6 @@
 from enum import Enum, auto
 
 
-
 class TerrainType(Enum):
     GRASSLAND = auto()
     FOREST = auto()

@@ -4,6 +4,7 @@ from game_state import Game_state
 from tiles.base_tile import BaseTile
 from ursina import camera, Vec3
 from map import map_manager
+from tiles.terrain_type import TerrainType
 
 
 class GameManager:
@@ -78,7 +79,7 @@ class GameManager:
             parent=self.editor_toolbar,
             position=(-0.1, 0.45),
             scale=(0.3, 0.07),
-            on_click=self.start_map_editor
+            on_click=self.open_generate_random_map_popup
         )
 
         Button(
@@ -261,10 +262,116 @@ class GameManager:
         except Exception as e:
             print(f"❌ Failed to load map: {e}")
 
-    def generate_random_map(self):
+    def open_generate_random_map_popup(self):
+        if hasattr(self, 'popup') and self.popup:
+            destroy(self.popup)
+
+        self.popup = Entity(parent=camera.ui)
+
+        # Center panel
+        panel = Entity(
+            parent=self.popup,
+            model='quad',
+            color=color.light_gray,
+            scale=(0.7, 0.9),
+            z=0
+        )
+
+        y = 0.4
+        spacing = 0.07
+
+        def add_input(label, default, attr_name):
+            nonlocal y
+            Text(f"{label}:", parent=panel, x=-0.25, y=y + 0.02, origin=(-0.5, 0), scale=0.7, color=color.black, z=-1)
+            input_field = InputField(
+                parent=panel,
+                default_value=str(default),
+                y=y,
+                x=0.1,
+                scale=(0.25, 0.065),
+                z=-1
+            )
+            setattr(self, attr_name, input_field)
+            y -= spacing
+
+        # Base config inputs
+        add_input("Rows", 10, "row_input")
+        add_input("Cols", 20, "col_input")
+        add_input("Action Fields", 10, "action_field_input")
+        add_input("Edges", 10, "edge_input")
+
+        # Terrain weights
+        self.terrain_weight_inputs = {}
+        for terrain in TerrainType:
+            if terrain.name == "NONE":
+                continue
+            Text(f"{terrain.name.capitalize()}:", parent=panel, x=-0.25, y=y + 0.02, origin=(-0.5, 0), scale=0.65,
+                 color=color.black, z=-1)
+            input_field = InputField(
+                parent=panel,
+                default_value="1",
+                y=y,
+                x=0.1,
+                scale=(0.25, 0.06),
+                z=-1
+            )
+            self.terrain_weight_inputs[terrain] = input_field
+            y -= spacing * 0.85
+
+        # Generate button
+        Button(
+            text="Generate",
+            parent=panel,
+            y=y - 0.05,
+            x=-0.1,
+            scale=(0.25, 0.07),
+            z=-1,
+            on_click=self.confirm_generate_random_map
+        )
+
+        # Cancel button
+        Button(
+            text="Cancel",
+            parent=panel,
+            y=y - 0.15,
+            x=-0.1,
+            scale=(0.25, 0.07),
+            z=-1,
+            on_click=self.close_popup
+        )
+
+    def confirm_generate_random_map(self):
+        try:
+            rows = int(self.row_input.text)
+            cols = int(self.col_input.text)
+            n_action_fields = int(self.action_field_input.text)
+            n_streets = int(self.edge_input.text)
+            weights = {
+                terrain: float(input_field.text)
+                for terrain, input_field in self.terrain_weight_inputs.items()
+            }
+
+            self.generate_random_map(
+                rows=rows,
+                cols=cols,
+                n_action_fields=n_action_fields,
+                n_streets=n_streets,
+                weights=weights
+            )
+            self.close_popup()
+            self.map_editor()
+        except Exception as e:
+            print(f"❌ Error generating map: {e}")
+
+    def generate_random_map(self, rows=10, cols=20, n_action_fields=10, n_streets=20, weights=None):
         if self.map_manager:
             self.destroy_map()
-        self.map_manager = map_manager.MapManager(rows=10, cols=20)
+        self.map_manager = map_manager.MapManager(
+            rows=rows,
+            cols=cols,
+            n_action_fields=n_action_fields,
+            n_streets=n_streets,
+            terrain_weights=weights)
         self.game_map = self.map_manager.generate_map()
         self.gamestate.game_map = self.game_map
 

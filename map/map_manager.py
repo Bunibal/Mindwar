@@ -4,20 +4,23 @@ from matplotlib import pyplot as plt
 from ursina import *
 from tiles.base_tile import BaseTile
 from tiles.terrain_type import TerrainType
-from tiles.feature_type import FeatureType
 from tiles.feature_type import FLAT_TERRAINS
 from tiles.feature_type import ACTION_FIELDS
 import random
 import networkx as nx
 import itertools
-from collections import defaultdict
 
 HEX_DIRECTIONS_EVEN = [(0, 1), (-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0)]
 HEX_DIRECTIONS_ODD = [(0, 1), (-1, 1), (-1, 0), (0, -1), (1, 0), (1, 1)]
 
 
 class MapManager:
-    def __init__(self, rows=8, cols=6):
+    def __init__(self, rows=8, cols=6, n_action_fields=None, n_streets=None, terrain_weights=None):
+        self.terrain_weights = terrain_weights
+        if terrain_weights is not None:
+            self.terrain_weights = self.normalize_weights(terrain_weights)
+        self.n_action_fields = n_action_fields
+        self.n_streets = n_streets
         self.action_fields = []
         self.street_network = None
         self.rows = rows
@@ -27,14 +30,14 @@ class MapManager:
     def generate_map(self):
         for q in range(self.rows):
             for r in range(self.cols):
-                terrain = self.random_terrain()
+                terrain = self.random_terrain(weights=self.terrain_weights)
                 tile = BaseTile(grid_position=(q, r), terrain=terrain)
                 self.tiles.append(tile)
                 if (q, r) in [(1, 1), (self.rows - 2, self.cols - 2), (self.rows - 2, 1), (1, self.cols - 2)]:
                     tile.mark_as_action_field()
                     self.action_fields.append(tile)
         self.action_fields = self.choose_random_action_fields((self.rows, self.cols))
-        self.calculate_generate_street_network(n_edges=12)
+        self.calculate_generate_street_network(n_edges=self.n_streets)
         self.clean_map_terrains()
         return self.tiles
 
@@ -42,11 +45,15 @@ class MapManager:
         for tile in self.tiles:
             if tile.has_street:
                 if tile.terrain not in FLAT_TERRAINS:
-                    tile.terrain = self.random_terrain(flat=True)
+                    tile.terrain = self.random_terrain(flat=True, weights=self.terrain_weights)
                     tile.model = tile.get_model_for_terrain(tile.terrain)
             if tile.is_action_field:
                 tile.terrain = random.choice(list(ACTION_FIELDS))
                 tile.model = tile.get_model_for_terrain(tile.terrain)
+
+    def normalize_weights(self, raw_weights):
+        total = sum(raw_weights.values())
+        return {k: v / total for k, v in raw_weights.items()} if total else raw_weights
 
     def distance(self, tile1, tile2):
         x1, y1, z1 = tile1.position
@@ -59,7 +66,10 @@ class MapManager:
         return self.distance(tile1, tile2) < 9.5
 
     def choose_random_action_fields(self, size):
-        n_fields = size[0] * size[1] // 20 - 2
+        if self.n_action_fields is None:
+            n_fields = size[0] * size[1] // 20 - 2
+        else:
+            n_fields = self.n_action_fields - 4
         possible_fields = [tile for tile in self.tiles if tile.terrain in ACTION_FIELDS]
         action_fields = self.action_fields
         trys = 400
@@ -143,13 +153,18 @@ class MapManager:
             rotation = None
         return model, rotation
 
-    def random_terrain(self, flat=False):
+    def random_terrain(self, flat=False, weights=None):
         if flat:
             terrain_types = list(FLAT_TERRAINS)
-            return random.choice(terrain_types)
         else:
-            terrain_types = list(TerrainType)
-            return random.choice(terrain_types[1:])
+            terrain_types = list(TerrainType)[1:]  # skip TerrainType.NONE or 0-index type
+
+        if weights:
+            # Filter weights only for valid terrain types
+            weight_list = [weights.get(t, 1) for t in terrain_types]
+            return random.choices(terrain_types, weights=weight_list, k=1)[0]
+        else:
+            return random.choice(terrain_types)
 
     @classmethod
     def update(cls, action):
