@@ -34,6 +34,7 @@ class MapManager:
         self.action_fields = self.choose_random_action_fields((self.rows, self.cols))
         self.calculate_generate_street_network(n_edges=12)
         self.clean_map_terrains()
+        return self.tiles
 
     def clean_map_terrains(self):
         for tile in self.tiles:
