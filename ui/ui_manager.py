@@ -1,5 +1,6 @@
 from ursina import *
 
+from map.map_manager import MapManager
 from tiles.terrain_type import TerrainType
 from factions.base_faction import FactionType
 from units.base_unit import BaseUnit
@@ -183,7 +184,7 @@ class UIManager:
             return
         if not os.path.exists('maps'):
             os.makedirs('maps')
-        self.map_manager.save("maps/" + filename + ".json")
+        self.game_manager.map_manager.save("maps/" + filename + ".json")
         print(f"💾 Map saved to maps/{filename}.json")
         self.close_popup()
 
@@ -248,9 +249,9 @@ class UIManager:
     def load_selected_map(self, filepath):
         if self.game_manager.map_manager:
             self.game_manager.destroy_map()
-        self.map_manager = self.game_manager.map_manager.MapManager()
+        self.game_manager.map_manager = MapManager()
         try:
-            self.map_manager.load(filepath)
+            self.game_manager.map_manager.load(filepath)
             self.game_manager.gamestate.game_map = self.game_manager.game_map
             self.game_manager.gamestate.game_state = "game"
 
