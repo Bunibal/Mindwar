@@ -23,7 +23,7 @@ class MapManager:
         self.n_streets = n_streets
         self.action_fields = []
         self.street_network = None
-        self.hex_graph = self.build_hex_graph()
+        self.hex_graph = None
         self.rows = rows
         self.cols = cols
         self.tiles = []
@@ -37,6 +37,7 @@ class MapManager:
                 if (q, r) in [(1, 1), (self.rows - 2, self.cols - 2), (self.rows - 2, 1), (1, self.cols - 2)]:
                     tile.mark_as_action_field()
                     self.action_fields.append(tile)
+        self.build_hex_graph()
         self.action_fields = self.choose_random_action_fields((self.rows, self.cols))
         self.calculate_generate_street_network(n_edges=self.n_streets)
         self.clean_map_terrains()
