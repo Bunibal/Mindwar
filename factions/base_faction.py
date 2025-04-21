@@ -4,22 +4,23 @@ from enum import Enum, auto
 from ursina import *
 
 
-
 class FactionType(Enum):
-    HUMANS = 'humans'
-    ORCS = 'orcs'
-    WIZARDS = 'wizards'
-    ELVES = 'elves'
-    DWARVES = 'dwarves'
-    UNDEAD = 'undead'
-    DEMONS = 'demons'
+    HUMANS = auto()
+    ORCS = auto()
+    WIZARDS = auto()
+    ELVES = auto()
+    DWARVES = auto()
+    UNDEAD = auto()
+    DEMONS = auto()
+
 
 class BuildingType(Enum):
-    BARRACKS = 'barracks'
-    TOWER = 'tower'
-    FARM = 'farm'
-    MINE = 'mine'
-    CASTLE = 'castle'
+    BARRACKS = auto()
+    TOWER = auto()
+    FARM = auto()
+    MINE = auto()
+    CASTLE = auto()
+
 
 class Building:
     def __init__(self, position: tuple, building_type: str = 'basic'):
@@ -30,7 +31,6 @@ class Building:
 
     def __repr__(self):
         return f"Building(position={self.position}, type={self.type})"
-
 
 
 def _load_faction_config(faction_type: FactionType) -> dict:
@@ -54,28 +54,22 @@ class BaseFaction:
         self.units = faction_config.units
         self.buildings = faction_config.buildings
 
-    def move_unit(self, unit, new_position):
+    def move_unit(self, unit, new_grid_position):
         if unit in self.units:
-            if unit.position == new_position:
-                print(f"Unit {unit} is already at the desired position.")
+            if unit.grid_position == new_grid_position:
+                print(f"Unit {unit} is already at the desired grid position.")
                 return
-            unit.position = new_position
+            unit.move_unit(new_grid_position)
         else:
             print(f"Unit {unit} not found in faction {self.name}.")
 
     def add_unit(self, unit, position):
+        unit.add_unit_to_world(position)
         self.units.append(unit)
-        unit.position = position
-        unit.faction = self.name
-        unit.color = self.color
-        unit.update_model()
 
     def remove_unit(self, unit):
         if unit in self.units:
-            self.units.remove(unit)
-            unit.faction = None
-            unit.color = color.white
-            unit.update_model()
+            unit.destroy_unit()
         else:
             print(f"Unit {unit} not found in faction {self.name}.")
 
