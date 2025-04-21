@@ -23,6 +23,7 @@ class MapManager:
         self.n_streets = n_streets
         self.action_fields = []
         self.street_network = None
+        self.hex_graph = self.build_hex_graph()
         self.rows = rows
         self.cols = cols
         self.tiles = []
@@ -264,7 +265,10 @@ class MapManager:
         return G
 
     def determine_tile_directions_from_paths(self):
-        G = self.build_hex_graph()
+        if not self.hex_graph:
+            G = self.build_hex_graph()
+        else:
+            G = self.hex_graph
         tile_directions = {}  # Use dict because we skip reused tiles anyway
         used_paths = list()
 

@@ -1,14 +1,9 @@
 import json
-from enum import Enum
+from enum import Enum, auto
 
-from ursina import color
+from ursina import *
 
-class UnitType(Enum):
-    INFANTRY = 'infantry'
-    CAVALRY = 'cavalry'
-    ARCHER = 'archer'
-    MAGE = 'mage'
-    SIEGE = 'siege'
+
 
 class FactionType(Enum):
     HUMANS = 'humans'
@@ -36,15 +31,7 @@ class Building:
     def __repr__(self):
         return f"Building(position={self.position}, type={self.type})"
 
-class Unit:
-    def __init__(self, name: str, position: tuple, unit_type: UnitType = UnitType.INFANTRY):
-        self.name = name
-        self.position = position
-        # self.type = unit_type
-        self.color = color.white
 
-    def __repr__(self):
-        return f"Unit(name={self.name}, position={self.position})"
 
 def _load_faction_config(faction_type: FactionType) -> dict:
     with open('configs/factions_config.json', 'r') as f:
