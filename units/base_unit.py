@@ -1,5 +1,3 @@
-from lib2to3.fixes.fix_tuple_params import map_to_index
-
 from ursina import *
 from enum import Enum, auto
 

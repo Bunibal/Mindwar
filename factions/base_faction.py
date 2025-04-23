@@ -55,12 +55,12 @@ class BaseFaction:
         self.units = faction_config.units
         self.buildings = faction_config.buildings
 
-    def move_unit(self, unit, new_position):
+    def move_unit(self, unit, new_grid_position):
         if unit in self.units:
-            if unit.position == new_position:
-                print(f"Unit {unit} is already at the desired position.")
+            if unit.grid_position == new_grid_position:
+                print(f"Unit {unit} is already at the desired grid position.")
                 return
-            unit.position = new_position
+            unit.move_unit(new_grid_position)
         else:
             print(f"Unit {unit} not found in faction {self.name}.")
 
