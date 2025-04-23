@@ -13,6 +13,7 @@ class FactionType(Enum):
     DWARVES = 'dwarves'
     UNDEAD = 'undead'
     DEMONS = 'demons'
+    NONE = 'none'
 
 class BuildingType(Enum):
     BARRACKS = 'barracks'

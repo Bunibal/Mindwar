@@ -49,6 +49,7 @@ class BaseUnit(Entity):
         self.disable()
         self.delete()
 
+
     @staticmethod
     def grid_to_world(q, r):
         tile_width = -2

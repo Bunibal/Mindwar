@@ -8,6 +8,8 @@ from units.base_unit import BaseUnit
 
 class UIManager:
     def __init__(self, game_manager):
+        self.is_prepare_random_map = None
+        self.map_load_filepath = None
         self.slots = None
         self.col_input = None
         self.action_field_input = None
@@ -95,12 +97,13 @@ class UIManager:
 
     def return_to_menu(self):
         print("🔙 Returning to Main Menu...")
-        destroy(self.editor_toolbar)
-        self.editor_toolbar = None
-        self.game_manager.destroy_map()
-        destroy(self.editor_toolbar)
-        self.editor_toolbar = None
-        self.game_manager.map_manager = None
+        if self.game_manager.map_manager:
+            self.game_manager.destroy_map()
+            self.game_manager.map_manager = None
+        if self.editor_toolbar:
+            destroy(self.editor_toolbar)
+            self.editor_toolbar = None
+        self.clear_ui()
         self.start_menu()
 
     def center_camera(self, rows, cols):
@@ -120,9 +123,8 @@ class UIManager:
             'Quit': 'quit_game'
         }[label]
 
-
     def start_game_locally(self):
-        self.game_manager.start_game_locally()
+        self.game_manager.setup_game_locally()
 
     def quit_game(self):
         application.quit()
@@ -193,7 +195,7 @@ class UIManager:
             destroy(self.popup)
             self.popup = None
 
-    def open_load_popup(self):
+    def open_load_popup(self, load_map=True):
         if hasattr(self, 'popup') and self.popup:
             destroy(self.popup)
 
@@ -234,7 +236,8 @@ class UIManager:
                     parent=self.scroll_container,
                     y=0.2 - i * 0.1,
                     scale=(0.5, 0.08),
-                    on_click=Func(self.load_selected_map, os.path.join(map_dir, file))
+                    on_click=Func(self.load_selected_map if load_map else self.prepare_load_map,
+                                  os.path.join(map_dir, file))
                 )
 
         # Cancel button
@@ -261,7 +264,7 @@ class UIManager:
         except Exception as e:
             print(f"❌ Failed to load map: {e}")
 
-    def open_generate_random_map_popup(self):
+    def open_generate_random_map_popup(self, load_map=True):
         if hasattr(self, 'popup') and self.popup:
             destroy(self.popup)
 
@@ -326,7 +329,7 @@ class UIManager:
             x=-0.1,
             scale=(0.25, 0.07),
             z=-1,
-            on_click=self.confirm_generate_random_map
+            on_click=Func(self.confirm_generate_random_map, load_map)
         )
 
         # Cancel button
@@ -340,28 +343,31 @@ class UIManager:
             on_click=self.close_popup
         )
 
-    def confirm_generate_random_map(self):
-        try:
-            rows = int(self.row_input.text)
-            cols = int(self.col_input.text)
-            n_action_fields = int(self.action_field_input.text)
-            n_streets = int(self.edge_input.text)
-            weights = {
-                terrain: float(input_field.text)
-                for terrain, input_field in self.terrain_weight_inputs.items()
-            }
+    def confirm_generate_random_map(self, load_map):
+        if load_map:
+            try:
+                rows = int(self.row_input.text)
+                cols = int(self.col_input.text)
+                n_action_fields = int(self.action_field_input.text)
+                n_streets = int(self.edge_input.text)
+                weights = {
+                    terrain: float(input_field.text)
+                    for terrain, input_field in self.terrain_weight_inputs.items()
+                }
 
-            self.game_manager.generate_random_map(
-                rows=rows,
-                cols=cols,
-                n_action_fields=n_action_fields,
-                n_streets=n_streets,
-                weights=weights
-            )
-            self.close_popup()
-            self.map_editor()
-        except Exception as e:
-            print(f"❌ Error generating map: {e}")
+                self.game_manager.generate_random_map(
+                    rows=rows,
+                    cols=cols,
+                    n_action_fields=n_action_fields,
+                    n_streets=n_streets,
+                    weights=weights
+                )
+                self.close_popup()
+                self.map_editor()
+            except Exception as e:
+                print(f"❌ Error generating map: {e}")
+        else:
+            self.is_prepare_random_map = True
 
     @staticmethod
     def hex_to_world(q, r):
@@ -369,7 +375,7 @@ class UIManager:
         dx = sqrt(3)  # ≈ 1.732, horizontal spacing
         dy = tile_width - 1
 
-        x = r * dx * 2 + (q%2) * dx
+        x = r * dx * 2 + (q % 2) * dx
         y = q * dy
 
         return (x, y, 0)
@@ -383,34 +389,88 @@ class UIManager:
         self.slots = []
         self.factions = list(FactionType)
 
+        title = Text("Choose Your Factions", parent=camera.ui, y=0.45, scale=2, origin=(0, 0), color=color.white)
+        start_index = [0, -1, -1, -1]
+        # Faction slots (up to 4)
         for i in range(4):
-            slot = Entity(parent=camera.ui, position=(-0.75 + i * 0.5, 0), scale=(0.4, 0.6), model='quad',
-                          color=color.gray)
+            x_pos = -0.5 + i * 0.33
+            slot = Entity(parent=camera.ui, position=(x_pos, 0), scale=(0.4, 0.6), model='quad',
+                          color=color.gray.tint(0.2), z=0)
 
-            slot.current_faction_index = i % len(self.factions)
-            slot.faction_label = Text(text=self.factions[slot.current_faction_index].value, parent=slot, y=0.35, scale=2)
+            slot.current_faction_index = start_index[i]
+
+            # Faction name label
+            slot.faction_label = Text(
+                text=self.factions[slot.current_faction_index].value,
+                parent=slot,
+                y=0.35,
+                scale=1.5,
+                origin=(0, 0),
+                color=color.black
+            )
 
             # Arrow buttons
-            left = Button(text='<-', parent=slot, position=(-0.15, -0.35), scale=(0.1, 0.1))
-            right = Button(text='->', parent=slot, position=(0.15, -0.35), scale=(0.1, 0.1))
+            left = Button(text='Back', parent=slot, position=(-0.18, -0.35), scale=(0.3, 0.1), color=color.azure)
+            right = Button(text='Forward', parent=slot, position=(0.18, -0.35), scale=(0.3, 0.1), color=color.azure)
 
             # Model display
             slot.model_display = BaseUnit(
                 parent=slot,
                 owner=self.factions[slot.current_faction_index].value,
-                position=(0, -0.1, 0),
+                position=(0, -0.05, 0),
                 scale=(0.3, 0.3, 0.3),
                 rotation_y=180
             )
 
             def update_model(s=slot):
                 faction = self.factions[s.current_faction_index]
-                s.faction_label.text = faction
+                s.faction_label.text = faction.value
+                s.model_display.owner = faction.value
+                s.model_display.model = BaseUnit.get_model_for_unit(faction.value, faction.value)
 
             left.on_click = Func(self.prev_faction, slot, update_model)
             right.on_click = Func(self.next_faction, slot, update_model)
 
             self.slots.append(slot)
+
+        # Control Buttons
+        button_y = -0.45
+
+        start_game_btn = Button(
+            text='Start Game',
+            position=(0.5, button_y),
+            scale=(0.25, 0.1),
+            parent=camera.ui,
+            color=color.lime,
+            on_click=self.ui_start_game_locally
+        )
+
+        back_btn = Button(
+            text='Back to Main Menu',
+            position=(-0.5, button_y),
+            scale=(0.25, 0.1),
+            parent=camera.ui,
+            color=color.red,
+            on_click=self.return_to_menu
+        )
+
+        load_map_btn = Button(
+            text='Load Map',
+            position=(0, button_y + 0.08),
+            scale=(0.2, 0.08),
+            parent=camera.ui,
+            color=color.orange,
+            on_click=self.open_load_popup
+        )
+
+        generate_map_btn = Button(
+            text='Generate Random Map',
+            position=(0, button_y),
+            scale=(0.3, 0.08),
+            parent=camera.ui,
+            color=color.cyan,
+            on_click=self.open_generate_random_map_popup
+        )
 
     def prev_faction(self, slot, update_func):
         slot.current_faction_index = (slot.current_faction_index - 1) % len(self.factions)
@@ -420,6 +480,91 @@ class UIManager:
         slot.current_faction_index = (slot.current_faction_index + 1) % len(self.factions)
         update_func()
 
+    def prepare_load_map(self, filepath):
+        self.close_popup()
+        self.map_load_filepath = filepath
 
+    def ui_start_game_locally(self):
+        # get factions chosen
+        self.game_manager.chosen_factions = []
+        for slot in self.slots:
+            if slot.current_faction_index != -1:
+                self.game_manager.chosen_factions.append(self.factions[slot.current_faction_index])
+        self.game_manager.n_players = len(self.game_manager.chosen_factions)
+        if not self.game_manager.n_players:
+            print("⚠️ No factions selected.")
+            return
+        self.game_manager.gamestate.game_state = "game"
+        self.game_manager.gamestate.chosen_factions = self.game_manager.chosen_factions
+        self.game_manager.gamestate.n_players = self.game_manager.n_players
+        if self.is_prepare_random_map:
+            self.game_manager.generate_random_map(
+                rows=int(self.row_input.text),
+                cols=int(self.col_input.text),
+                n_action_fields=int(self.action_field_input.text),
+                n_streets=int(self.edge_input.text),
+                weights={
+                    terrain: float(input_field.text)
+                    for terrain, input_field in self.terrain_weight_inputs.items()
+                }
+            )
+            self.game_manager.start_game_locally()
+            self.is_prepare_random_map = False
+        elif self.map_load_filepath:
+            self.map_load_filepath = None
+            self.game_manager.load_selected_map(self.map_load_filepath)
+            self.game_manager.start_game_locally()
+        else:
+            self.clear_ui()
+            self.game_manager.generate_random_map()
+            self.center_camera(self.game_manager.map_manager.rows, self.game_manager.map_manager.cols)
+            self.game_manager.start_game_locally()
 
+    def game_ui(self):
+        self.ui_elements = []
+        toolbar_bg = Entity(
+            parent=camera.ui,
+            model='quad',
+            scale=(1.3, 0.18),  # Width, height of toolbar
+            position=(0, -0.48),  # Bottom center
+            color=color.dark_gray
+        )
+        self.ui_elements.append(toolbar_bg)
 
+        # === Player Turn Text ===
+        self.turn_info = Text(
+            text=f"{self.game_manager.current_player} – potential name's Turn",
+            parent=camera.ui,
+            position=(-0.6, -0.43),
+            origin=(-0.5, 0),
+            scale=1.3,
+            color=color.white
+        )
+        self.ui_elements.append(self.turn_info)
+
+        # === Action Buttons ===
+        action_labels = ['Build', 'Recruit', 'Buy Cards', 'Fight', 'Move']
+        action_callbacks = [self.game_manager.build_action, self.game_manager.recruit_action,
+                            self.game_manager.buy_cards_action, self.game_manager.fight_action,
+                            self.game_manager.move_action]
+
+        for i, (label, callback) in enumerate(zip(action_labels, action_callbacks)):
+            btn = Button(
+                text=label,
+                parent=camera.ui,
+                position=(-0.45 + i * 0.23, -0.48),  # Even spacing
+                scale=(0.2, 0.1),
+                color=color.azure,
+                on_click=callback
+            )
+            self.ui_elements.append(btn)
+
+        # === End Turn Button ===
+        end_turn_btn = Button(
+            text='End Turn',
+            parent=camera.ui,
+            position=(0.45, -0.48),
+            scale=(0.2, 0.1),
+            color=color.red,
+            on_click=self.game_manager.end_turn
+        )
