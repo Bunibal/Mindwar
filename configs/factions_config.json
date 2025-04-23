@@ -1,7 +1,7 @@
 {
   "factions": [
     {
-      "faction_type": "humans",
+      "faction_type": "human",
       "description": "The dominant species on Earth, known for their intelligence and adaptability.",
       "units": [],
       "buildings": [],
@@ -34,7 +34,7 @@
       ]
     },
     {
-      "faction_type": "ocrs",
+      "faction_type": "ocr",
       "description": "Brutish warriors known for strength and resilience.",
       "units": [],
       "buildings": [],
@@ -67,7 +67,7 @@
       ]
     },
     {
-      "faction_type": "wizards",
+      "faction_type": "wizard",
       "description": "A faction of powerful magic users, known for their mastery of arcane arts.",
       "units": [],
       "buildings": [],
@@ -100,7 +100,7 @@
       ]
     },
     {
-      "faction_type": "elves",
+      "faction_type": "elve",
       "description": "A faction of mystical beings, known for their connection to nature and magic.",
       "units": [],
       "buildings": [],
@@ -129,6 +129,105 @@
         {
           "name": "arcane_power",
           "amount": 5
+        }
+      ]
+    },
+    {
+      "faction_type": "demon",
+      "description": "A faction of dark beings, known for their mastery of dark magic and manipulation.",
+      "units": [],
+      "buildings": [],
+      "attributes": {
+        "fighting": 5,
+        "gathering": 7,
+        "luck": 6
+      },
+      "resources": [
+        {
+          "name": "gold",
+          "amount": 5
+        },
+        {
+          "name": "wood",
+          "amount": 5
+        },
+        {
+          "name": "stone",
+          "amount": 5
+        },
+        {
+          "name": "food",
+          "amount": 5
+        },
+        {
+          "name": "arcane_power",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "faction_type": "undead",
+      "description": "A faction of undead beings, known for their mastery of necromancy and dark magic.",
+      "units": [],
+      "buildings": [],
+      "attributes": {
+        "fighting": 5,
+        "gathering": 7,
+        "luck": 6
+      },
+      "resources": [
+        {
+          "name": "gold",
+          "amount": 5
+        },
+        {
+          "name": "wood",
+          "amount": 5
+        },
+        {
+          "name": "stone",
+          "amount": 5
+        },
+        {
+          "name": "food",
+          "amount": 5
+        },
+        {
+          "name": "arcane_power",
+          "amount": 10
+        }
+      ]
+    },
+    {
+      "faction_type": "dwarve",
+      "description": "A faction of small beings, known for their primal instincts and strength.",
+      "units": [],
+      "buildings": [],
+      "attributes": {
+        "fighting": 5,
+        "gathering": 7,
+        "luck": 6
+      },
+      "resources": [
+        {
+          "name": "gold",
+          "amount": 5
+        },
+        {
+          "name": "wood",
+          "amount": 5
+        },
+        {
+          "name": "stone",
+          "amount": 5
+        },
+        {
+          "name": "food",
+          "amount": 5
+        },
+        {
+          "name": "arcane_power",
+          "amount": 10
         }
       ]
     }

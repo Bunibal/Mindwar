@@ -3,36 +3,19 @@ from enum import Enum, auto
 
 from ursina import *
 
+from buildings.base_building import BaseBuilding
+from cards.base_card import BaseCard
+from units.base_unit import BaseUnit
 
 
 class FactionType(Enum):
-    HUMANS = 'humans'
-    ORCS = 'orcs'
-    WIZARDS = 'wizards'
-    ELVES = 'elves'
-    DWARVES = 'dwarves'
-    UNDEAD = 'undead'
-    DEMONS = 'demons'
-    NONE = 'none'
-
-class BuildingType(Enum):
-    BARRACKS = 'barracks'
-    TOWER = 'tower'
-    FARM = 'farm'
-    MINE = 'mine'
-    CASTLE = 'castle'
-
-class Building:
-    def __init__(self, position: tuple, building_type: str = 'basic'):
-        self.position = position
-        self.type = building_type
-        self.color = color.white
-        self.health = 100
-
-    def __repr__(self):
-        return f"Building(position={self.position}, type={self.type})"
-
-
+    HUMAN = auto()
+    ORC = auto()
+    WIZARD = auto()
+    ELVE = auto()
+    DWARVE = auto()
+    UNDEAD = auto()
+    DEMON = auto()
 
 def _load_faction_config(faction_type: FactionType) -> dict:
     with open('configs/factions_config.json', 'r') as f:
@@ -49,11 +32,23 @@ class BaseFaction:
     def __init__(self, name: str, faction_type: FactionType):
         faction_config = _load_faction_config(faction_type)
         self.name = name
+        self.faction_type = faction_type
         self.description = faction_config.description
         self.color = color.white
         self.resources = faction_config.resources
         self.units = faction_config.units
         self.buildings = faction_config.buildings
+        self.cards = []
+
+    def add_card(self, card: BaseCard):
+        self.cards.append(card)
+
+    def play_card(self, card: BaseCard):
+        if card in self.cards:
+            card.play_card()
+            self.cards.remove(card)
+        else:
+            print(f"Card {card} not found in inventory {self.name}.")
 
     def move_unit(self, unit, new_grid_position):
         if unit in self.units:
@@ -64,35 +59,32 @@ class BaseFaction:
         else:
             print(f"Unit {unit} not found in faction {self.name}.")
 
-    def add_unit(self, unit, position):
+    def create_unit(self, unit_type, position):
+        unit = BaseUnit(position, self.faction_type, unit_type)
         self.units.append(unit)
-        unit.position = position
-        unit.faction = self.name
-        unit.color = self.color
-        unit.update_model()
+        return unit
 
-    def remove_unit(self, unit):
+    def destroy_unit(self, unit):
         if unit in self.units:
             self.units.remove(unit)
-            unit.faction = None
-            unit.color = color.white
-            unit.update_model()
+            unit.destroy_unit()
         else:
             print(f"Unit {unit} not found in faction {self.name}.")
 
-    def add_building(self, building):
+    def create_building(self, building_type, grid_position):
+        building = BaseBuilding(grid_position, self.faction_type, building_type)
         self.buildings.append(building)
+        return building
 
     def damage_building(self, building, damage):
         if building in self.buildings:
-            building.health -= 10
-            if building.health <= 0:
-                self.destroy_building(building)
+            building.damage_building(damage)
         else:
             print(f"Building {building} not found in faction {self.name}.")
 
     def destroy_building(self, building):
         if building in self.buildings:
+            building.destroy_building()
             self.buildings.remove(building)
         else:
             print(f"Building {building} not found in faction {self.name}.")

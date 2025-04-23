@@ -1,0 +1,39 @@
+{
+  "cards": [
+    {
+      "name": "Card 1",
+      "card_type": "spell",
+      "description": "This is a spell card.",
+      "properties": {
+        "power": 10,
+        "cost": 5
+      }
+    },
+    {
+      "name": "Card 2",
+      "card_type": "unit",
+      "description": "This is a unit card.",
+      "properties": {
+        "power": 10,
+        "cost": 5
+      }
+    },
+    {
+      "name": "Card 3",
+      "card_type": "building",
+      "description": "This is a building card.",
+      "properties": {
+        "power": 10,
+        "cost": 5
+      }
+    },    {
+      "name": "Card 4",
+      "card_type": "resrouce",
+      "description": "This is a resource card.",
+      "properties": {
+        "power": 10,
+        "cost": 5
+      }
+    }
+  ]
+}
