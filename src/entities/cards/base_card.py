@@ -3,6 +3,8 @@ from enum import Enum, auto
 
 from ursina import Entity, color
 
+from src import settings
+
 
 class CardType(Enum):
     SPELL = auto()
@@ -30,7 +32,7 @@ class BaseCard(Entity):
     @staticmethod
     def get_model_for_card(card_type: CardType):
         card_type_name = card_type.name.lower()
-        return f"assets/models/cards/{card_type_name}.glb"
+        return f"{settings.CARDS_DIR}/{card_type_name}.glb"
 
     def play_card(self):
         # TODO: Implement the logic for playing the card
@@ -41,7 +43,7 @@ class BaseCard(Entity):
     @staticmethod
     def load_cards():
         cards = []
-        with open('../configs/cards.json', 'r') as f:
+        with open('../../../configs/cards.json', 'r') as f:
             data = json.load(f)
             for card_data in data['cards']:
                 card = BaseCard(

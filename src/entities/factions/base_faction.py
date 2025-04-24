@@ -1,13 +1,11 @@
 import json
-import os
-import sys
 from enum import Enum, auto
 
 from ursina import *
 
-from buildings.base_building import BaseBuilding, BuildingType
-from cards.base_card import BaseCard, CardType
-from units.base_unit import BaseUnit, UnitType
+from src.entities.buildings.base_building import BaseBuilding, BuildingType
+from src.entities.cards.base_card import BaseCard
+from src.entities.units.base_unit import BaseUnit, UnitType
 
 
 class FactionType(Enum):
@@ -21,7 +19,7 @@ class FactionType(Enum):
 
 
 def _load_faction_config(faction_type: FactionType) -> dict:
-    with open('../configs/factions_config.json', 'r') as f:
+    with open('../../../configs/factions_config.json', 'r') as f:
         config = json.load(f)
 
     for faction in config['factions']:
@@ -98,6 +96,7 @@ class BaseFaction:
         units_str = ', '.join(str(u) for u in self.units)
         cards_str = ', '.join(str(c) for c in self.cards)
         return f"Faction(player_name={self.name}, faction_type={self.faction_type}, buildings={buildings_str}, units={units_str}, cards={cards_str})"
+
 
 if __name__ == "__main__":
     # Create a test faction

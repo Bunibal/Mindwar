@@ -2,10 +2,12 @@ import json
 
 from matplotlib import pyplot as plt
 from ursina import *
-from tiles.base_tile import BaseTile
-from tiles.terrain_type import TerrainType
-from tiles.feature_type import FLAT_TERRAINS
-from tiles.feature_type import ACTION_FIELDS
+
+from src import settings
+from src.entities.tiles.base_tile import BaseTile
+from src.entities.tiles.terrain_type import TerrainType
+from src.entities.tiles.feature_type import FLAT_TERRAINS
+from src.entities.tiles.feature_type import ACTION_FIELDS
 import random
 import networkx as nx
 import itertools
@@ -123,7 +125,7 @@ class MapManager:
         angle = angle % 360
 
         if angle == 180:
-            model = "assets/models/hex_streets/street_straight.glb"
+            model = f"{settings.HEX_STREETS_DIR}/street_straight.glb"
             if even:
                 # position in HEX_DIRECTIONS_EVEN
                 rotation = HEX_DIRECTIONS_EVEN.index(d1) * 60
@@ -131,7 +133,7 @@ class MapManager:
                 # position in HEX_DIRECTIONS_ODD
                 rotation = HEX_DIRECTIONS_ODD.index(d1) * 60
         elif angle in (120, 240):  # Wide curve
-            model = "assets/models/hex_streets/street_curve_large.glb"
+            model = f"{settings.HEX_STREETS_DIR}/street_curve_large.glb"
             if even and angle == 120:
                 rotation = HEX_DIRECTIONS_EVEN.index(d1) * 60
             elif not even and angle == 120:
@@ -141,7 +143,7 @@ class MapManager:
             elif not even and angle == 240:
                 rotation = HEX_DIRECTIONS_ODD.index(d2) * 60
         elif angle in (60, 300):  # Tight curve
-            model = "assets/models/hex_streets/street_curve_small.glb"
+            model = f"{settings.HEX_STREETS_DIR}/street_curve_small.glb"
             if even and angle == 60:
                 rotation = HEX_DIRECTIONS_EVEN.index(d1) * 60
             elif not even and angle == 60:

@@ -1,5 +1,5 @@
 
-class Game_state:
+class GameState:
     def __init__(self):
         self.player = None
         self.game_map = None

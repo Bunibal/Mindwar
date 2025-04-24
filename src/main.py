@@ -1,5 +1,6 @@
-from panda3d.core import loadPrcFileData, WindowProperties
 import os
+
+from panda3d.core import loadPrcFileData, WindowProperties
 
 # --- Panda3D Config ---
 loadPrcFileData('', 'window-title Mindwar')
@@ -25,8 +26,9 @@ def main():
     props.setOrigin(100, 100)
     props.setSize(1280, 720)
     props.setFullscreen(False)
+    print(os.getcwd())
 
-    icon_path = os.path.abspath('assets/ui/mindwar_icon.ico')
+    icon_path = os.path.abspath('../assets/ui/mindwar_icon.ico')
     if os.path.exists(icon_path):
         props.setIconFilename(icon_path)
     else:

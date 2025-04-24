@@ -1,9 +1,9 @@
 from ursina import *
 
-from map.map_manager import MapManager
-from tiles.terrain_type import TerrainType
-from factions.base_faction import FactionType
-from units.base_unit import BaseUnit
+from src.map.map_manager import MapManager
+from src.entities.tiles.terrain_type import TerrainType
+from src.entities.factions.base_faction import FactionType
+from src.entities.units.base_unit import BaseUnit, UnitType
 
 
 class UIManager:
@@ -25,7 +25,7 @@ class UIManager:
         self.menu_panel = Entity(
             parent=camera.ui,
             model='quad',
-            texture='assets/ui/menu_background.png',
+            texture='../assets/ui/menu_background.png',
             scale=(1.6, 0.9),
             color=color.rgba(50, 50, 50, 180),
             position=(0, 0, 0),
@@ -415,9 +415,12 @@ class UIManager:
 
             # Model display
             slot.model_display = BaseUnit(
+                grid_position=(5, 3),
+                faction=FactionType.HUMAN.name,
+                unit_type=UnitType.INFANTRY,
                 parent=slot,
                 owner=self.factions[slot.current_faction_index].value,
-                position=(0, -0.05, 0),
+                # position=(0, -0.05, 0),
                 scale=(0.3, 0.3, 0.3),
                 rotation_y=180
             )
@@ -426,7 +429,7 @@ class UIManager:
                 faction = self.factions[s.current_faction_index]
                 s.faction_label.text = faction.value
                 s.model_display.owner = faction.value
-                s.model_display.model = BaseUnit.get_model_for_unit(faction.value, faction.value)
+                s.model_display.model = BaseUnit.get_model_for_unit(slot.model_display.type, faction.value)
 
             left.on_click = Func(self.prev_faction, slot, update_model)
             right.on_click = Func(self.next_faction, slot, update_model)

@@ -1,16 +1,17 @@
+import os
+
 from ursina import *
 
 from math import sqrt
 
-from tiles.terrain_type import TerrainType
-from tiles.feature_type import FeatureType
-
-
+from src import settings
+from src.entities.tiles.feature_type import FeatureType
+from src.entities.tiles.terrain_type import TerrainType
 
 
 class BaseTile(Button):
     def __init__(self, grid_position=(0, 0), terrain=TerrainType.GRASSLAND, feature=FeatureType.NONE, **kwargs):
-        if type(terrain) !=  TerrainType and terrain in TerrainType.__members__:
+        if type(terrain) != TerrainType and terrain in TerrainType.__members__:
             self.terrain = TerrainType[terrain]
         else:
             self.terrain = terrain
@@ -44,14 +45,13 @@ class BaseTile(Button):
             **kwargs
         )
 
-
     @staticmethod
     def hex_to_world(q, r):
         tile_width = -2
         dx = sqrt(3)  # ≈ 1.732, horizontal spacing
         dy = tile_width - 1
 
-        x = r * dx * 2 + (q%2) * dx
+        x = r * dx * 2 + (q % 2) * dx
         y = q * dy
 
         return (x, y, 0)
@@ -68,18 +68,19 @@ class BaseTile(Button):
             print(f"Street directions: {self.street_dirs}")
             print(f"even: {self.grid_position[0] % 2 == 0}")
 
-
-    def get_model_for_terrain(self, terrain):
+    @staticmethod
+    def get_model_for_terrain(terrain):
         return {
-            TerrainType.GRASSLAND: 'hex_grass.glb',
-            TerrainType.FOREST: 'hex_forest.glb',
-            TerrainType.WETLAND: 'hex_wetland.glb',
-            TerrainType.MOUNTAIN: 'hex_mountain.glb',
-            TerrainType.DESERT: 'hex_desert.glb',
-            TerrainType.WATER: 'hex_water.glb',
-        }.get(terrain, 'hex_grass.obj')
+            TerrainType.GRASSLAND: f'{settings.HEX_TILES_DIR}/hex_grass.glb',
+            TerrainType.FOREST: f'{settings.HEX_TILES_DIR}/hex_forest.glb',
+            TerrainType.WETLAND: f'{settings.HEX_TILES_DIR}/hex_wetland.glb',
+            TerrainType.MOUNTAIN: f'{settings.HEX_TILES_DIR}/hex_mountain.glb',
+            TerrainType.DESERT: f'{settings.HEX_TILES_DIR}/hex_desert.glb',
+            TerrainType.WATER: f'{settings.HEX_TILES_DIR}/hex_water.glb',
+        }.get(terrain, f'{settings.HEX_TILES_DIR}/hex_grass.obj')
 
-    def get_terrain_height(self, terrain):
+    @staticmethod
+    def get_terrain_height(terrain):
         return {
             TerrainType.GRASSLAND: 0.1,
             TerrainType.FOREST: 0.1,
@@ -89,7 +90,8 @@ class BaseTile(Button):
             TerrainType.WATER: 0.05,
         }.get(terrain, 0.1)
 
-    def get_terrain_color(self, terrain):
+    @staticmethod
+    def get_terrain_color(terrain):
         return {
             TerrainType.GRASSLAND: color.green,
             TerrainType.FOREST: rgb(0, 100, 0),
@@ -122,17 +124,17 @@ class BaseTile(Button):
 
     def to_dict(self):
         return {
-            "terrain" : self.terrain.name,
-            "feature" : self.feature.name,
-            "owner" : self.owner.name if self.owner else None,
-            "buildings" : self.buildings if self.buildings else [],
-            "units" : self.units if self.units else [],
-            "grid_position" : self.grid_position,
-            "has_street" : self.has_street,
-            "street_rotation" : self.street_rotation,
-            "street_dirs" : self.street_dirs,
-            "is_action_field" : self.is_action_field,
-            "street_entity" : self.street_entity.model.name if self.street_entity else None,
+            "terrain": self.terrain.name,
+            "feature": self.feature.name,
+            "owner": self.owner.name if self.owner else None,
+            "buildings": self.buildings if self.buildings else [],
+            "units": self.units if self.units else [],
+            "grid_position": self.grid_position,
+            "has_street": self.has_street,
+            "street_rotation": self.street_rotation,
+            "street_dirs": self.street_dirs,
+            "is_action_field": self.is_action_field,
+            "street_entity": self.street_entity.model.name if self.street_entity else None,
         }
 
     def from_dict(self, data):
@@ -145,7 +147,7 @@ class BaseTile(Button):
 
         if data.get("street_entity"):
             self.street_entity = Entity(
-                model= data["street_entity"],
+                model=data["street_entity"],
                 parent=self,
                 scale=1,
                 position=(0, 0, -0.2),
@@ -154,6 +156,3 @@ class BaseTile(Button):
             )
         else:
             self.street_entity = None
-
-
-

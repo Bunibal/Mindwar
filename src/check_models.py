@@ -1,10 +1,11 @@
 from ursina import *
 import os
 
+from src import settings
+
 app = Ursina()
 
-model_folder = 'assets/models/hex_streets/'
-models = [file for file in os.listdir(model_folder) if file.endswith('.glb') or file.endswith('.gltf')]
+models = [file for file in os.listdir(settings.HEX_STREETS_DIR) if file.endswith('.glb') or file.endswith('.gltf')]
 
 index = 0
 tile = None
@@ -21,7 +22,7 @@ def load_model_by_index(i):
     if info_text:
         destroy(info_text)
 
-    model_path = model_folder + models[i]
+    model_path = settings.HEX_STREETS_DIR + models[i]
     print(f"\n--- Loading: {model_path} ---")
 
     tile = Entity(model=model_path, position=(0, 0, 0), unlit=True)

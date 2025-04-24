@@ -2,7 +2,8 @@ from enum import Enum, auto
 
 from ursina import Entity, color
 
-from utils import world_calculations
+from src import settings
+from src.utils import world_calculations
 
 
 class BuildingType(Enum):
@@ -52,7 +53,7 @@ class BaseBuilding(Entity):
     def get_model_for_building(building_type: BuildingType, faction: str):
         building_type_name = building_type.name.lower()
         faction_name = faction.lower()
-        return f"assets/models/buildings/{faction_name}/{building_type_name}.glb"
+        return f"{settings.BUILDINGS_DIR}/{faction_name}/{building_type_name}.glb"
 
     def destroy_building(self):
         # TODO

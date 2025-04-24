@@ -1,5 +1,5 @@
 from ursina import *
-from game_state import Game_state
+from gamestate import GameState
 from ursina import Vec3
 from map import map_manager
 from ui.ui_manager import UIManager
@@ -10,7 +10,7 @@ class GameManager:
         self.current_player = None
         self.chosen_factions = None
         self.map_manager = None
-        self.gamestate = Game_state()
+        self.gamestate = GameState()
         self.gamestate.game_manager = self
         self.ui_manager = UIManager(self)
         self.ui_manager.start_menu()

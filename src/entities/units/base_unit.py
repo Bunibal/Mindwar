@@ -1,7 +1,8 @@
 from ursina import *
 from enum import Enum, auto
 
-from utils import world_calculations
+from src import settings
+from src.utils import world_calculations
 
 
 class UnitType(Enum):
@@ -34,7 +35,7 @@ class BaseUnit(Entity):
     def get_model_for_unit(unit_type: UnitType, faction: str):
         unit_type_name = unit_type.name.lower()
         faction_name = faction
-        return f"assets/models/units/{faction_name}/{unit_type_name}.glb"
+        return f"{settings.UNITS_DIR}/{faction_name}/{unit_type_name}.glb"
 
     def move_unit(self, new_position: tuple):
         self.grid_position = new_position
