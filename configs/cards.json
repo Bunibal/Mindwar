@@ -26,9 +26,10 @@
         "power": 10,
         "cost": 5
       }
-    },    {
+    },
+    {
       "name": "Card 4",
-      "card_type": "resrouce",
+      "card_type": "resource",
       "description": "This is a resource card.",
       "properties": {
         "power": 10,
