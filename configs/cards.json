@@ -2,6 +2,7 @@
   "cards": [
     {
       "name": "Card 1",
+      "image": "../../assets/ui/card_images/card_1.png",
       "card_type": "spell",
       "description": "This is a spell card.",
       "properties": {
@@ -11,6 +12,7 @@
     },
     {
       "name": "Card 2",
+      "image": "../assets/ui/card_images/card_2.png",
       "card_type": "unit",
       "description": "This is a unit card.",
       "properties": {
@@ -20,6 +22,7 @@
     },
     {
       "name": "Card 3",
+      "image": "../assets/ui/card_images/card_3.png",
       "card_type": "building",
       "description": "This is a building card.",
       "properties": {
@@ -29,6 +32,7 @@
     },
     {
       "name": "Card 4",
+      "image": "../assets/ui/card_images/card_4.png",
       "card_type": "resource",
       "description": "This is a resource card.",
       "properties": {

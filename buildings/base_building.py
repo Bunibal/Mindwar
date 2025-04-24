@@ -2,7 +2,6 @@ from enum import Enum, auto
 
 from ursina import Entity, color
 
-from factions.base_faction import FactionType
 from utils import world_calculations
 
 
@@ -21,11 +20,11 @@ class BuildingType(Enum):
 
 
 class BaseBuilding(Entity):
-    def __init__(self, grid_position: tuple, faction: FactionType, building_type: BuildingType = BuildingType.BARRACKS,
+    def __init__(self, grid_position: tuple, faction: str, building_type: BuildingType,
                  scale=(1, 1, 1), **kwargs):
         self.grid_position = grid_position
         self.type = building_type
-        self.faction = faction
+        self.faction = faction.lower()
         self.health = 100
 
         super().__init__(
@@ -37,23 +36,26 @@ class BaseBuilding(Entity):
             pressed_color=color.lime,
             **kwargs
         )
-        print(f"{self} added to world at {grid_position}")
 
-    def __repr__(self):
-        return f"Building(type={self.type}, owner={self.faction})"
+    def __str__(self):
+        return f"Building(building_type={self.type}, faction={self.faction}, health={self.health}, grid_position={self.grid_position})"
 
     def damage_building(self, damage: int):
         self.health -= damage
         if self.health <= 0:
             self.destroy_building()
             print(f"{self} destroyed.")
+            return True
+        return False
 
     @staticmethod
-    def get_model_for_building(building_type: BuildingType, faction: FactionType):
+    def get_model_for_building(building_type: BuildingType, faction: str):
         building_type_name = building_type.name.lower()
-        faction_name = faction.name.lower()
+        faction_name = faction.lower()
         return f"assets/models/buildings/{faction_name}/{building_type_name}.glb"
 
     def destroy_building(self):
-        self.disable()
-        self.delete()
+        # TODO
+        pass#
+        # self.disable()
+        # self.delete()

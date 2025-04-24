@@ -1,7 +1,6 @@
 from ursina import *
 from enum import Enum, auto
 
-from factions.base_faction import FactionType
 from utils import world_calculations
 
 
@@ -14,11 +13,11 @@ class UnitType(Enum):
 
 
 class BaseUnit(Entity):
-    def __init__(self, grid_position: tuple, faction: FactionType, unit_type: UnitType = UnitType.INFANTRY,
+    def __init__(self, grid_position: tuple, faction: str, unit_type: UnitType,
                  scale=(1, 1, 1), **kwargs):
         self.grid_position = grid_position
         self.type = unit_type
-        self.faction = faction
+        self.faction = faction.lower()
         self.moves_left = 2
 
         super().__init__(
@@ -32,11 +31,10 @@ class BaseUnit(Entity):
         )
 
     @staticmethod
-    def get_model_for_unit(unit_type: UnitType, faction: FactionType):
+    def get_model_for_unit(unit_type: UnitType, faction: str):
         unit_type_name = unit_type.name.lower()
-        faction_name = faction.name.lower()
+        faction_name = faction
         return f"assets/models/units/{faction_name}/{unit_type_name}.glb"
-
 
     def move_unit(self, new_position: tuple):
         self.grid_position = new_position
@@ -46,6 +44,5 @@ class BaseUnit(Entity):
         self.disable()
         self.delete()
 
-
-    def __repr__(self):
-        return f"Unit(name={self.name}, position={self.position})"
+    def __str__(self):
+        return f"Unit(unit_type={self.type}, unit_faction={self.faction}, grid_position={self.grid_position})"
