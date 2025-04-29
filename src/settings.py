@@ -1,0 +1,5 @@
+HEX_STREETS_DIR="../assets/models/hex_streets"
+HEX_TILES_DIR="../assets/models/hex_tiles"
+BUILDINGS_DIR="../assets/models/buildings"
+CARDS_DIR="../assets/models/cards"
+UNITS_DIR="../assets/models/units"
