@@ -543,10 +543,9 @@ class UIManager:
         self.ui_elements.append(self.turn_info)
 
         # === Action Buttons ===
-        action_labels = ['Build', 'Recruit', 'Buy Cards', 'Fight', 'Move']
+        action_labels = ['Build', 'Recruit', 'Fight', 'Move']
         action_callbacks = [self.game_manager.build_action, self.game_manager.recruit_action,
-                            self.game_manager.buy_cards_action, self.game_manager.fight_action,
-                            self.game_manager.move_action]
+                            self.game_manager.fight_action, self.game_manager.move_action]
 
         for i, (label, callback) in enumerate(zip(action_labels, action_callbacks)):
             btn = Button(

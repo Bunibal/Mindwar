@@ -58,8 +58,6 @@ class GameManager:
     def recruit_action(self):
         pass
 
-    def buy_cards_action(self):
-        pass
 
     def fight_action(self):
         pass
