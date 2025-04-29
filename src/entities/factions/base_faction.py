@@ -6,6 +6,8 @@ from ursina import *
 from src.entities.buildings.base_building import BaseBuilding, BuildingType
 from src.entities.cards.base_card import BaseCard
 from src.entities.units.base_unit import BaseUnit, UnitType
+from src.settings import FACTION_CONFIGS
+from src.utils.exceptions import FactionException
 
 
 class FactionType(Enum):
@@ -18,8 +20,16 @@ class FactionType(Enum):
     DEMON = auto()
 
 
+class ActionType(Enum):
+    RECRUIT_UNIT = auto()
+    INITIATE_COMBAT = auto()
+    BUILD_BUILDING = auto()
+    GATHER_RESOURCES = auto()
+    MOVE_UNIT = auto()
+
+
 def _load_faction_config(faction_type: FactionType) -> dict:
-    with open('../../../configs/factions_config.json', 'r') as f:
+    with open(f'{FACTION_CONFIGS}', 'r') as f:
         config = json.load(f)
 
     for faction in config['factions']:
@@ -40,6 +50,14 @@ class BaseFaction:
         self.units = []
         self.buildings = []
         self.cards = []
+        self.action_tracker = {ActionType.RECRUIT_UNIT: True, ActionType.INITIATE_COMBAT: True,
+                               ActionType.BUILD_BUILDING: True,
+                               ActionType.GATHER_RESOURCES: True, ActionType.MOVE_UNIT: True}
+
+    def check_action_count(self, action: ActionType):
+        if not self.action_tracker[action]:
+            raise FactionException(f"Action {action.name} not available for this turn.")
+        self.action_tracker[action] = False
 
     def add_card(self, card: BaseCard):
         self.cards.append(card)
@@ -49,18 +67,19 @@ class BaseFaction:
             card.play_card()
             self.cards.remove(card)
         else:
-            print(f"Card {card} not found in inventory {self.name}.")
+            raise FactionException(f"Card {card} not found in faction {self.name}.")
 
     def move_unit(self, unit, new_grid_position):
+        self.check_action_count(ActionType.MOVE_UNIT)
         if unit in self.units:
             if unit.grid_position == new_grid_position:
-                print(f"Unit {unit} is already at the desired grid position.")
-                return
+                raise FactionException(f"Unit {unit} is already at the desired grid position.")
             unit.move_unit(new_grid_position)
         else:
-            print(f"Unit {unit} not found in faction {self.name}.")
+            raise FactionException(f"Unit {unit} not found in faction {self.name}.")
 
     def create_unit(self, unit_type, position):
+        self.check_action_count(ActionType.RECRUIT_UNIT)
         unit = BaseUnit(position, self.faction_type.name, unit_type)
         self.units.append(unit)
         return unit
@@ -70,9 +89,10 @@ class BaseFaction:
             self.units.remove(unit)
             unit.destroy_unit()
         else:
-            print(f"Unit {unit} not found in faction {self.name}.")
+            raise FactionException(f"Unit {unit} not found in faction {self.name}.")
 
     def create_building(self, building_type, grid_position):
+        self.check_action_count(ActionType.BUILD_BUILDING)
         building = BaseBuilding(grid_position, self.faction_type.name, building_type)
         self.buildings.append(building)
         return building
@@ -82,14 +102,14 @@ class BaseFaction:
             if building.damage_building(damage):
                 self.destroy_building(building)
         else:
-            print(f"Building {building} not found in faction {self.name}.")
+            raise FactionException(f"Building {building} not found in faction {self.name}.")
 
     def destroy_building(self, building):
         if building in self.buildings:
             building.destroy_building()
             self.buildings.remove(building)
         else:
-            print(f"Building {building} not found in faction {self.name}.")
+            raise FactionException(f"Building {building} not found in faction {self.name}.")
 
     def __str__(self):
         buildings_str = ', '.join(str(b) for b in self.buildings)

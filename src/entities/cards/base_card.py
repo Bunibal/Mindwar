@@ -43,7 +43,7 @@ class BaseCard(Entity):
     @staticmethod
     def load_cards():
         cards = []
-        with open('../../../configs/cards.json', 'r') as f:
+        with open(settings.CARDS, 'r') as f:
             data = json.load(f)
             for card_data in data['cards']:
                 card = BaseCard(
