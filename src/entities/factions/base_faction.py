@@ -56,7 +56,6 @@ class BaseFaction:
         else:
             print(f"Card {card} not found in inventory {self.name}.")
 
-
     def move_unit(self, unit, new_grid_position):
         if unit in self.units:
             if unit.grid_position == new_grid_position:

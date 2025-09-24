@@ -7,13 +7,14 @@ from src.utils import world_calculations
 
 
 class BuildingType(Enum):
-    BARRACKS = ("Barracks", 10, 10, 20)
-    GATHERING_STATION = ("Gathering Station", 2, 1, 1)
-    CASTLE = ("Castle", 100, 200, 200)
+    BARRACKS = ("Barracks", 0, 10, 10, 20)
+    GATHERING_STATION = ("Gathering Station", 0, 2, 1, 1)
+    CASTLE = ("Castle", 0, 100, 200, 200)
 
-    def __new__(cls, name, wood, stone, food):
+    def __new__(cls, name, level, wood, stone, food):
         obj = object.__new__(cls)
         obj._value_ = name
+        obj.level = level
         obj.wood = wood
         obj.stone = stone
         obj.food = food
@@ -27,6 +28,7 @@ class BaseBuilding(Entity):
         self.type = building_type
         self.faction = faction.lower()
         self.health = 100
+        self.level = 0
 
         super().__init__(
             model=self.get_model_for_building(building_type, self.faction),
@@ -48,6 +50,12 @@ class BaseBuilding(Entity):
             print(f"{self} destroyed.")
             return True
         return False
+
+    def upgrade_building(self):
+        if self.level <= 3:
+            pass
+        pass
+
 
     @staticmethod
     def get_model_for_building(building_type: BuildingType, faction: str):
