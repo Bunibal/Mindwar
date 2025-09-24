@@ -15,6 +15,7 @@ FLAT_TERRAINS = {
     TerrainType.WATER
 }
 
+
 class FeatureType(Enum):
     NONE = auto()
     OUTPOST = auto()

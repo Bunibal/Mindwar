@@ -1,8 +1,4 @@
-import os
-
 from ursina import *
-
-from math import sqrt
 
 from src import settings
 from src.entities.tiles.feature_type import FeatureType

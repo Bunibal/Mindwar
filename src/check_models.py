@@ -1,5 +1,4 @@
 from ursina import *
-import os
 
 from src import settings
 
@@ -14,6 +13,7 @@ info_text = None
 # Persistent reference grid + cube
 Entity(model='plane', scale=100, color=color.gray, y=-1)
 Entity(model='cube', color=color.red, scale=0.2, position=(0, 0, 0))
+
 
 def load_model_by_index(i):
     global tile, info_text
@@ -42,6 +42,7 @@ def load_model_by_index(i):
 
     info_text = Text(models[i], position=(-0.5, 0.4), scale=2)
 
+
 def input(key):
     global index
     if key == 'right arrow':
@@ -50,6 +51,7 @@ def input(key):
     elif key == 'left arrow':
         index = (index - 1) % len(models)
         load_model_by_index(index)
+
 
 # Lighting
 DirectionalLight().look_at(Vec3(1, -1, -1))
@@ -63,4 +65,3 @@ load_model_by_index(index)
 EditorCamera()  # ← this stays active the whole time
 
 app.run()
-

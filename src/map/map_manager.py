@@ -1,16 +1,15 @@
+import itertools
 import json
 
+import networkx as nx
 from matplotlib import pyplot as plt
 from ursina import *
 
 from src import settings
 from src.entities.tiles.base_tile import BaseTile
-from src.entities.tiles.terrain_type import TerrainType
-from src.entities.tiles.feature_type import FLAT_TERRAINS
 from src.entities.tiles.feature_type import ACTION_FIELDS
-import random
-import networkx as nx
-import itertools
+from src.entities.tiles.feature_type import FLAT_TERRAINS
+from src.entities.tiles.terrain_type import TerrainType
 
 HEX_DIRECTIONS_EVEN = [(0, 1), (-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0)]
 HEX_DIRECTIONS_ODD = [(0, 1), (-1, 1), (-1, 0), (0, -1), (1, 0), (1, 1)]
@@ -383,7 +382,6 @@ class MapManager:
         ax.set_aspect('equal')
         plt.title("Hex Tile Paths Through Road Graph")
         plt.show()
-
 
     def to_dict(self):
         return {

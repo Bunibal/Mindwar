@@ -1,10 +1,10 @@
 from ursina import *
-from gamestate import GameState
 from ursina import Vec3
-from map import map_manager
-from src.entities.factions.base_faction import FactionType
+
 from src.entities.units.base_unit import UnitType, BaseUnit
-from ui.ui_manager import UIManager
+from src.gamestate import GameState
+from src.map import map_manager
+from src.ui.ui_manager import UIManager
 
 
 class GameManager:
@@ -39,8 +39,8 @@ class GameManager:
                         for i in range(config[unit_type.name]):
                             for action_field in self.map_manager.action_fields:
                                 unit = BaseUnit(player.name, unit_type, grid_position=action_field.grid_position,
-                                                position=action_field.position + (0,0,-1),
-                                                ) # parent=player
+                                                position=action_field.position + (0, 0, -1),
+                                                )  # parent=player
                                 player.units.append(unit)
                 else:
                     randomized_fields = self.map_manager.get_random_action_fields(config["n_selected_fields"])
@@ -76,7 +76,6 @@ class GameManager:
             terrain_weights=weights)
         self.game_map = self.map_manager.generate_map()
         self.gamestate.game_map = self.game_map
-
 
         DirectionalLight().look_at(Vec3(1, -1, -1))
 

@@ -1,4 +1,3 @@
-
 from ursina import *
 
 from src import settings
@@ -31,7 +30,7 @@ for row_index, (label, model_path) in enumerate(models.items()):
         label_text = Text(
             text=f'{label}\n{rot}°',
             world_parent=road,
-            position = (0, 0.5, 0),
+            position=(0, 0.5, 0),
             scale=10,
             origin=(0, 0),
             color=color.azure

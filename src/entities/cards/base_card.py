@@ -12,6 +12,7 @@ class CardType(Enum):
     BUILDING = auto()
     RESOURCE = auto()
 
+
 class BaseCard(Entity):
     def __init__(self, card_name: str, card_image: str, card_type: CardType, card_description: str, **kwargs):
         self.card_name = card_name
@@ -39,7 +40,7 @@ class BaseCard(Entity):
         print("Playing card:", self.card_name)
         # self.disable()
         # self.delete()
-        
+
     @staticmethod
     def load_cards():
         cards = []

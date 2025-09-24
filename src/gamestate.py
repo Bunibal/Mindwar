@@ -1,4 +1,3 @@
-
 class GameState:
     def __init__(self):
         self.player = None
@@ -15,7 +14,7 @@ class GameState:
 
     def map_to_dict(self):
         return {
-            "map" : self.game_manager.map_manager.to_dict()
+            "map": self.game_manager.map_manager.to_dict()
         }
 
     def map_from_dict(self, data):

@@ -1,4 +1,4 @@
-from enum import Enum, auto
+from enum import Enum
 
 from ursina import Entity, color
 
@@ -56,7 +56,6 @@ class BaseBuilding(Entity):
             pass
         pass
 
-
     @staticmethod
     def get_model_for_building(building_type: BuildingType, faction: str):
         building_type_name = building_type.name.lower()
@@ -65,6 +64,6 @@ class BaseBuilding(Entity):
 
     def destroy_building(self):
         # TODO
-        pass#
+        pass  #
         # self.disable()
         # self.delete()

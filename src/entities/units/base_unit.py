@@ -1,5 +1,6 @@
-from ursina import *
 from enum import Enum, auto
+
+from ursina import *
 
 from src import settings
 from src.utils import world_calculations
@@ -22,7 +23,6 @@ class BaseUnit(Entity):
         self.moves_left = 2
         self.color = color.white
 
-
         super().__init__(
             model=self.get_model_for_unit(unit_type, self.faction),
             scale=scale,
@@ -35,7 +35,6 @@ class BaseUnit(Entity):
         print(f"Texture: {self.texture}")
         print(f"Color: {self.color}")
         print(f"Unlit: {self.unlit}")
-
 
     @staticmethod
     def get_model_for_unit(unit_type: UnitType, faction: str):

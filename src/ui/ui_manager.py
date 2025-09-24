@@ -1,10 +1,10 @@
 from ursina import *
 
-from src.map.map_manager import MapManager
-from src.entities.tiles.terrain_type import TerrainType
-from src.entities.factions.base_faction import FactionType
 from src.entities.factions.base_faction import BaseFaction
+from src.entities.factions.base_faction import FactionType
+from src.entities.tiles.terrain_type import TerrainType
 from src.entities.units.base_unit import BaseUnit, UnitType
+from src.map.map_manager import MapManager
 
 
 class UIManager:
@@ -595,7 +595,6 @@ class UIManager:
     def update_game_ui(self):
         self.update_turn_info()
         self.update_resources_info()
-
 
     def update_turn_info(self):
         if hasattr(self, 'turn_info') and self.turn_info:
