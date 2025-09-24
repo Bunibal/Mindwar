@@ -1,6 +1,7 @@
 import os
 
 from panda3d.core import loadPrcFileData, WindowProperties
+from ui.ui_manager import input_handle
 
 # --- Panda3D Config ---
 loadPrcFileData('', 'window-title Mindwar')
@@ -15,7 +16,10 @@ loadPrcFileData('', 'window-type none')  # prevent premature window creation
 from ursina import *
 from game_manager import GameManager
 
+
+
 def main():
+    global input
     app = Ursina(borderless=False)
 
     window.exit_button.visible = False
@@ -38,9 +42,15 @@ def main():
     application.base.win.requestProperties(props)
 
     # Start the GameManager
-    GameManager()
+    game = GameManager()
+
+    def input(key):
+        input_handle(key, game.ui_manager)
 
     app.run()
+
+
+
 
 if __name__ == '__main__':
     main()

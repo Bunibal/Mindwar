@@ -12,14 +12,15 @@ class FactionType(Enum):
     HUMAN = auto()
     ORC = auto()
     WIZARD = auto()
-    ELVE = auto()
-    DWARVE = auto()
+    ELF = auto()
+    DWARF = auto()
     UNDEAD = auto()
     DEMON = auto()
+    NONE = None
 
 
 def _load_faction_config(faction_type: FactionType) -> dict:
-    with open('../../../configs/factions_config.json', 'r') as f:
+    with open('src/configs/factions_config.json', 'r') as f:
         config = json.load(f)
 
     for faction in config['factions']:
@@ -31,12 +32,16 @@ def _load_faction_config(faction_type: FactionType) -> dict:
 class BaseFaction:
     # move, initiate combat(unit or building), build building, gather resources, recruit unit, draw card
     def __init__(self, name: str, faction_type: FactionType):
+        if faction_type == faction_type.NONE:
+            self.name = "NONE"
+            return
         faction_config = _load_faction_config(faction_type)
         self.name = name
         self.faction_type = faction_type
         self.description = faction_config['description']
         self.color = color.white
         self.resources = faction_config['resources']
+        self.units_start_config = faction_config["units"]
         self.units = []
         self.buildings = []
         self.cards = []
@@ -51,6 +56,7 @@ class BaseFaction:
         else:
             print(f"Card {card} not found in inventory {self.name}.")
 
+
     def move_unit(self, unit, new_grid_position):
         if unit in self.units:
             if unit.grid_position == new_grid_position:
@@ -61,7 +67,7 @@ class BaseFaction:
             print(f"Unit {unit} not found in faction {self.name}.")
 
     def create_unit(self, unit_type, position):
-        unit = BaseUnit(position, self.faction_type.name, unit_type)
+        unit = BaseUnit(position, self.faction_type, unit_type)
         self.units.append(unit)
         return unit
 

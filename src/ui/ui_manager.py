@@ -3,6 +3,7 @@ from ursina import *
 from src.map.map_manager import MapManager
 from src.entities.tiles.terrain_type import TerrainType
 from src.entities.factions.base_faction import FactionType
+from src.entities.factions.base_faction import BaseFaction
 from src.entities.units.base_unit import BaseUnit, UnitType
 
 
@@ -386,50 +387,60 @@ class UIManager:
 
     def setup_game_ui(self):
         self.clear_ui()
+
+        # Add proper lighting for the faction selection screen
+        DirectionalLight().look_at(Vec3(1, -1, -1))
+        AmbientLight(color=color.rgba(120, 120, 120, 0.5))  # Add ambient light for better visibility
+
         self.slots = []
-        self.factions = list(FactionType)
+        self.factions = [BaseFaction(name=faction.name, faction_type=faction) for faction in FactionType]
 
         title = Text("Choose Your Factions", parent=camera.ui, y=0.45, scale=2, origin=(0, 0), color=color.white)
         start_index = [0, -1, -1, -1]
+
         # Faction slots (up to 4)
         for i in range(4):
             x_pos = -0.5 + i * 0.33
             slot = Entity(parent=camera.ui, position=(x_pos, 0), scale=(0.4, 0.6), model='quad',
-                          color=color.gray.tint(0.2), z=0)
+                          color=color.gray.tint(0.2), z=0.1)
 
             slot.current_faction_index = start_index[i]
 
             # Faction name label
             slot.faction_label = Text(
-                text=self.factions[slot.current_faction_index].value,
+                text=self.factions[slot.current_faction_index].name,
                 parent=slot,
                 y=0.35,
                 scale=1.5,
                 origin=(0, 0),
-                color=color.black
+                color=color.black,
+                z=-0.1
             )
 
             # Arrow buttons
-            left = Button(text='Back', parent=slot, position=(-0.18, -0.35), scale=(0.3, 0.1), color=color.azure)
-            right = Button(text='Forward', parent=slot, position=(0.18, -0.35), scale=(0.3, 0.1), color=color.azure)
+            left = Button(text='Back', parent=slot, position=(-0.18, -0.35, -0.1), scale=(0.3, 0.1), color=color.azure)
+            right = Button(text='Forward', parent=slot, position=(0.18, -0.35, -0.1), scale=(0.3, 0.1),
+                           color=color.azure)
 
-            # Model display
+            # Model display - Remove color override here too
             slot.model_display = BaseUnit(
-                grid_position=(5, 3),
+                position=(0, -0.1, 0.3),
                 faction=FactionType.HUMAN.name,
                 unit_type=UnitType.INFANTRY,
-                parent=slot,
-                owner=self.factions[slot.current_faction_index].value,
-                # position=(0, -0.05, 0),
+                parent=scene,
+                owner=self.factions[slot.current_faction_index],
                 scale=(0.3, 0.3, 0.3),
-                rotation_y=180
+                rotation_y=180,
+                z=-1
+                # REMOVED any color parameter to preserve model colors
             )
 
             def update_model(s=slot):
                 faction = self.factions[s.current_faction_index]
-                s.faction_label.text = faction.value
-                s.model_display.owner = faction.value
-                s.model_display.model = BaseUnit.get_model_for_unit(slot.model_display.type, faction.value)
+                s.faction_label.text = faction.name
+                s.model_display.owner = faction.name
+                s.model_display.model = BaseUnit.get_model_for_unit(slot.model_display.type, faction.name)
+                # Don't set color here either - let the model keep its original colors
 
             left.on_click = Func(self.prev_faction, slot, update_model)
             right.on_click = Func(self.next_faction, slot, update_model)
@@ -536,7 +547,7 @@ class UIManager:
 
         # === Player Turn Text ===
         self.turn_info = Text(
-            text=f"{self.game_manager.current_player} – potential name's Turn",
+            text=f"{self.game_manager.current_player.name} – potential name's Turn",
             parent=camera.ui,
             position=(-0.6, -0.43),
             origin=(-0.5, 0),
@@ -545,28 +556,109 @@ class UIManager:
         )
         self.ui_elements.append(self.turn_info)
 
+        self.resources_info = Entity(
+            parent=camera.ui,
+            model='quad',
+            scale=(0.2, 0.6),
+            position=(0.8, 0.1),
+            color=color.gray,
+            z=-10
+        )
+
+        for i, element in enumerate(self.game_manager.current_player.resources):
+            Text(
+                text=f"{element['name']} : {element['amount']}",
+                parent=self.resources_info,
+                position=(-0.25, -0.4 + i * (1 / len(self.game_manager.current_player.resources))),
+                color=color.white,
+                scale=3,
+                z=-9
+            )
+
         # === Action Buttons ===
-        action_labels = ['Build', 'Recruit', 'Fight', 'Move']
+        action_labels = ['Build', 'Recruit', 'Fight', 'Move', 'Gather', 'End Turn']
         action_callbacks = [self.game_manager.build_action, self.game_manager.recruit_action,
-                            self.game_manager.fight_action, self.game_manager.move_action]
+                            self.game_manager.fight_action, self.game_manager.move_action,
+                            self.game_manager.gather_action, self.game_manager.end_turn]
 
         for i, (label, callback) in enumerate(zip(action_labels, action_callbacks)):
             btn = Button(
                 text=label,
                 parent=camera.ui,
-                position=(-0.45 + i * 0.23, -0.48),  # Even spacing
+                position=(-0.6 + i * 0.23, -0.3),  # Even spacing
                 scale=(0.2, 0.1),
                 color=color.azure,
                 on_click=callback
             )
             self.ui_elements.append(btn)
 
-        # === End Turn Button ===
-        end_turn_btn = Button(
-            text='End Turn',
-            parent=camera.ui,
-            position=(0.45, -0.48),
-            scale=(0.2, 0.1),
-            color=color.red,
-            on_click=self.game_manager.end_turn
+    def update_game_ui(self):
+        self.update_turn_info()
+        self.update_resources_info()
+
+
+    def update_turn_info(self):
+        if hasattr(self, 'turn_info') and self.turn_info:
+            self.turn_info.text = f"{self.game_manager.current_player.name} – potential name's Turn"
+
+    def update_resources_info(self):
+        if hasattr(self, "resources_info") and self.resources_info:
+            # Clear out old children (texts) first
+            for child in self.resources_info.children:
+                destroy(child)
+
+            # Recreate updated resource texts
+            for i, element in enumerate(self.game_manager.current_player.resources):
+                Text(
+                    text=f"{element['name']} : {element['amount']}",
+                    parent=self.resources_info,
+                    position=(-0.25, -0.4 + i * (1 / len(self.game_manager.current_player.resources))),
+                    color=color.white,
+                    scale=3,
+                    z=-9
+                )
+
+    def game_exit_popup(self):
+        if hasattr(self, 'popup') and self.popup:
+            destroy(self.popup)
+
+        self.popup = Entity(parent=camera.ui)
+
+        # Center panel
+        panel = Entity(
+            parent=self.popup,
+            model='quad',
+            color=color.light_gray,
+            scale=(0.4, 0.6),
+            z=0
         )
+
+        y = 0.4
+        spacing = 0.07
+
+        # Generate button
+        Button(
+            text="Exit to main menu",
+            parent=panel,
+            y=y - 0.1,
+            x=0,
+            scale=(0.6, 0.07),
+            z=-1,
+            on_click=Func(self.return_to_menu)
+        )
+
+        Button(
+            text="Cancel",
+            parent=panel,
+            y=y - 0.2,
+            x=0,
+            scale=(0.6, 0.07),
+            z=-1,
+            on_click=Func(self.close_popup)
+        )
+
+
+def input_handle(key, ui_manager: UIManager):
+    if key == 'escape':
+        if ui_manager.game_manager.gamestate.game_state == "game":
+            ui_manager.game_exit_popup()

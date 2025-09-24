@@ -420,3 +420,6 @@ class MapManager:
             if tile.grid_position == pos:
                 return tile
         return None
+
+    def get_random_action_fields(self, n):
+        return random.choices(self.action_fields, n)

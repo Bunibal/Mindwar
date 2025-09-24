@@ -3,7 +3,17 @@
     {
       "faction_type": "human",
       "description": "The dominant species on Earth, known for their intelligence and adaptability.",
-      "units": [],
+      "units": [
+        {
+          "all_fields": true,
+          "n_selected_fields": 0,
+          "INFANTRY": 1,
+          "CAVALRY": 0,
+          "ARCHER": 0,
+          "MAGE": 0,
+          "SIEGE": 0
+        }
+      ],
       "buildings": [],
       "attributes": {
         "fighting": 5,
@@ -34,9 +44,19 @@
       ]
     },
     {
-      "faction_type": "ocr",
+      "faction_type": "orc",
       "description": "Brutish warriors known for strength and resilience.",
-      "units": [],
+      "units": [
+        {
+          "all_fields": false,
+          "n_selected_fields": 2,
+          "INFANTRY": 3,
+          "CAVALRY": 0,
+          "ARCHER": 1,
+          "MAGE": 0,
+          "SIEGE": 0
+        }
+      ],
       "buildings": [],
       "attributes": {
         "fighting": 5,
@@ -69,7 +89,17 @@
     {
       "faction_type": "wizard",
       "description": "A faction of powerful magic users, known for their mastery of arcane arts.",
-      "units": [],
+      "units": [
+        {
+          "all_fields": false,
+          "n_selected_fields": 3,
+          "INFANTRY": 1,
+          "CAVALRY": 0,
+          "ARCHER": 0,
+          "MAGE": 2,
+          "SIEGE": 0
+        }
+      ],
       "buildings": [],
       "attributes": {
         "fighting": 5,
@@ -100,9 +130,19 @@
       ]
     },
     {
-      "faction_type": "elve",
+      "faction_type": "elf",
       "description": "A faction of mystical beings, known for their connection to nature and magic.",
-      "units": [],
+      "units": [
+        {
+          "all_fields": false,
+          "n_selected_fields": 2,
+          "INFANTRY": 0,
+          "CAVALRY": 0,
+          "ARCHER": 5,
+          "MAGE": 1,
+          "SIEGE": 0
+        }
+      ],
       "buildings": [],
       "attributes": {
         "fighting": 5,
@@ -168,7 +208,17 @@
     {
       "faction_type": "undead",
       "description": "A faction of undead beings, known for their mastery of necromancy and dark magic.",
-      "units": [],
+      "units": [
+        {
+          "all_fields": false,
+          "n_selected_fields": 1,
+          "INFANTRY": 10,
+          "CAVALRY": 0,
+          "ARCHER": 0,
+          "MAGE": 0,
+          "SIEGE": 0
+        }
+      ],
       "buildings": [],
       "attributes": {
         "fighting": 5,
@@ -199,9 +249,19 @@
       ]
     },
     {
-      "faction_type": "dwarve",
+      "faction_type": "dwarf",
       "description": "A faction of small beings, known for their primal instincts and strength.",
-      "units": [],
+      "units": [
+        {
+          "all_fields": false,
+          "n_selected_fields": 2,
+          "INFANTRY": 5,
+          "CAVALRY": 0,
+          "ARCHER": 0,
+          "MAGE": 0,
+          "SIEGE": 1
+        }
+      ],
       "buildings": [],
       "attributes": {
         "fighting": 5,
