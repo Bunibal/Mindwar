@@ -1,6 +1,7 @@
 from ursina import *
 from ursina import Vec3
 
+from src.game import Game
 from src.entities.units.base_unit import UnitType, BaseUnit
 from src.gamestate import GameState
 from src.map import map_manager
@@ -9,28 +10,18 @@ from src.ui.ui_manager import UIManager
 
 class GameManager:
     def __init__(self):
-        self.current_player = None
-        self.chosen_factions = None
-        self.map_manager = None
-        self.gamestate = GameState()
-        self.gamestate.game_manager = self
+        self.game = Game()
         self.ui_manager = UIManager(self)
         self.ui_manager.start_menu()
 
     def setup_game_locally(self):
-        self.gamestate.game_state = "game"
-        self.gamestate.game_map = []
+        self.game.setup_game()
         self.ui_manager.setup_game_ui()
 
     def start_game_locally(self):
-        self.prepare_game()
-        self.current_player = self.chosen_factions[0]
+        self.game.start_game()
         self.ui_manager.game_ui()
 
-    def prepare_game(self):
-        self.load_start_units()
-
-    def load_start_units(self):
         for player in self.chosen_factions:
             start_config = player.units_start_config
             for config in start_config:
@@ -53,9 +44,7 @@ class GameManager:
                                 player.units.append(unit)
 
     def end_turn(self):
-        self.current_player = self.chosen_factions[
-            (self.chosen_factions.index(self.current_player) + 1) % len(self.chosen_factions)]
-        self.ui_manager.update_game_ui()
+        self.game.end_turn()
 
     def destroy_map(self):
         for tile in self.gamestate.game_map:
@@ -64,37 +53,3 @@ class GameManager:
         self.map_manager = None
         self.gamestate.game_map = []
         scene.clear()
-
-    def generate_random_map(self, rows=10, cols=20, n_action_fields=10, n_streets=20, weights=None):
-        if self.map_manager:
-            self.destroy_map()
-        self.map_manager = map_manager.MapManager(
-            rows=rows,
-            cols=cols,
-            n_action_fields=n_action_fields,
-            n_streets=n_streets,
-            terrain_weights=weights)
-        self.game_map = self.map_manager.generate_map()
-        self.gamestate.game_map = self.game_map
-
-        DirectionalLight().look_at(Vec3(1, -1, -1))
-
-        # sun = DirectionalLight()
-        # sun.look_at(Vec3(1, -1, -1))
-        # AmbientLight(color=color.rgba(120, 120, 120, 0.5))
-        self.gamestate.game_state = "game"
-
-    def build_action(self):
-        pass
-
-    def recruit_action(self):
-        pass
-
-    def fight_action(self):
-        pass
-
-    def move_action(self):
-        pass
-
-    def gather_action(self):
-        pass
