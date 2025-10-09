@@ -1,5 +1,5 @@
-from src.entities.units.base_unit_logic import UnitType, BaseUnit
-from src.gamestate import GameState
+from src.entities.units.base_unit_logic import UnitType, BaseUnitLogic
+from server.gamestate import GameState
 from src.map import map_manager_logic
 
 
@@ -8,12 +8,10 @@ class Game:
         self.current_player = None
         self.chosen_factions = None
         self.map_manager = None
-        self.gamestate = GameState()
-        self.gamestate.game_manager = self
 
     def setup_game(self):
-        self.gamestate.game_state = "game"
-        self.gamestate.game_map = []
+        self.game_state = "game"
+        self.game_map = []
 
     def start_game(self):
         self.prepare_game()
@@ -30,7 +28,7 @@ class Game:
                     for unit_type in UnitType:
                         for i in range(config[unit_type.name]):
                             for action_field in self.map_manager.action_fields:
-                                unit = BaseUnit(player.name, unit_type, grid_position=action_field.grid_position,
+                                unit = BaseUnitLogic(player.name, unit_type, grid_position=action_field.grid_position,
                                                 position=action_field.position + (0, 0, -1),
                                                 )  # parent=player
                                 player.units.append(unit)
@@ -39,7 +37,7 @@ class Game:
                     for unit_type in UnitType:
                         for i in range(config[unit_type.name]):
                             for action_field in randomized_fields:
-                                unit = BaseUnit(player.name, unit_type, action_field.grid_position,
+                                unit = BaseUnitLogic(player.name, unit_type, action_field.grid_position,
                                                 action_field.position,
                                                 parent=player)
                                 player.units.append(unit)
@@ -63,6 +61,15 @@ class Game:
         # sun.look_at(Vec3(1, -1, -1))
         # AmbientLight(color=color.rgba(120, 120, 120, 0.5))
         self.gamestate.game_state = "game"
+
+    def encode_game_state(self):
+        state = {
+            "current_player": self.current_player.name if self.current_player else None,
+            "chosen_factions": [player.name for player in self.chosen_factions] if self.chosen_factions else [],
+            "map": [tile.to_dict() for tile in self.game_map] if self.game_map else [],
+            "game_state": self.game_state,
+        }
+        return state
 
     def build_action(self):
         pass

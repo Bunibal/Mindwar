@@ -14,19 +14,15 @@ class UnitType(Enum):
     SIEGE = auto()
 
 
-class BaseUnit(Entity):
-    def __init__(self, faction: str, unit_type: UnitType,
-                 scale=19, grid_position: tuple = (0, 0), position: tuple = None, rotation=(90, 0, 180), **kwargs):
-        self.grid_position = grid_position
-        self.type = unit_type
-        self.faction = faction.lower()
-        self.moves_left = 2
+class BaseUnitUI(Entity):
+    def __init__(self, logic_obj, scale=19, rotation=(90, 0, 180), **kwargs):
+        self.logic_object = logic_obj
         self.color = color.white
-
+        self.position = world_calculations.grid_to_world(*self.logic_object.grid_position) 
         super().__init__(
-            model=self.get_model_for_unit(unit_type, self.faction),
+            model=self.get_model_for_unit(self.logic_obj.unit_type, self.logic_obj.faction),
             scale=scale,
-            position=world_calculations.grid_to_world(*grid_position) if position is None else position,
+            position=self.position,
             origin=(0, 0),
             rotation=rotation,
             **kwargs
@@ -41,13 +37,13 @@ class BaseUnit(Entity):
         unit_type_name = unit_type.name.lower()
         return f"{settings.UNITS_DIR}/{faction}/{unit_type_name}.glb"
 
-    def move_unit(self, new_position: tuple):
-        self.grid_position = new_position
-        self.position = world_calculations.grid_to_world(*new_position)
+    # def move_unit(self, new_position: tuple):
+    #     self.grid_position = new_position
+    #     self.position = world_calculations.grid_to_world(*new_position)
 
     def destroy_unit(self):
         self.disable()
         self.delete()
 
     def __str__(self):
-        return f"Unit(unit_type={self.type}, unit_faction={self.faction}, grid_position={self.grid_position})"
+        return f"Unit Entity (unit_type={self.logic_object.type}, unit_faction={self.logic_object.faction}, grid_position={self.logic_object.grid_position})"

@@ -3,7 +3,7 @@ from src.entities.tiles.feature_type import FeatureType
 from src.entities.tiles.terrain_type import TerrainType
 
 
-class BaseTile:
+class BaseTileLogic:
     def __init__(self, grid_position=(0, 0), terrain=TerrainType.GRASSLAND, feature=FeatureType.NONE, **kwargs):
         if type(terrain) != TerrainType and terrain in TerrainType.__members__:
             self.terrain = TerrainType[terrain]

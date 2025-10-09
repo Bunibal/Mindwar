@@ -3,7 +3,7 @@ import os
 from panda3d.core import Texture, FrameBufferProperties, WindowProperties, GraphicsOutput, GraphicsPipe, PNMImage
 
 # Replace these with your actual imports
-from src.entities.units.base_unit import BaseUnit
+from src.entities.units.base_unit import BaseUnitUI
 from src.entities.factions.base_faction import FactionType
 from src.entities.factions.base_faction import UnitType
 
@@ -69,7 +69,7 @@ def setup_render_pair(unit_type, faction):
     if model_entity:
         model_entity.remove_node()
 
-    model_entity = BaseUnit(
+    model_entity = BaseUnitUI(
         unit_type=unit_type,
         faction=faction.name,
         parent=scene,

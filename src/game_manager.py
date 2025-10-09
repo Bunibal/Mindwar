@@ -1,9 +1,9 @@
 from ursina import *
 from ursina import Vec3
 
-from src.game import Game
-from src.entities.units.base_unit import UnitType, BaseUnit
-from src.gamestate import GameState
+from server.game import Game
+from src.entities.units.base_unit import UnitType, BaseUnitUI
+from server.gamestate import GameState
 from src.map import map_manager
 from src.ui.ui_manager import UIManager
 
@@ -29,7 +29,7 @@ class GameManager:
                     for unit_type in UnitType:
                         for i in range(config[unit_type.name]):
                             for action_field in self.map_manager.action_fields:
-                                unit = BaseUnit(player.name, unit_type, grid_position=action_field.grid_position,
+                                unit = BaseUnitUI(player.name, unit_type, grid_position=action_field.grid_position,
                                                 position=action_field.position + (0, 0, -1),
                                                 )  # parent=player
                                 player.units.append(unit)
@@ -38,7 +38,7 @@ class GameManager:
                     for unit_type in UnitType:
                         for i in range(config[unit_type.name]):
                             for action_field in randomized_fields:
-                                unit = BaseUnit(player.name, unit_type, action_field.grid_position,
+                                unit = BaseUnitUI(player.name, unit_type, action_field.grid_position,
                                                 action_field.position,
                                                 parent=player)
                                 player.units.append(unit)

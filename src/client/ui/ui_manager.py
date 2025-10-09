@@ -3,12 +3,12 @@ from ursina import *
 from src.entities.factions.base_faction import BaseFaction
 from src.entities.factions.base_faction import FactionType
 from src.entities.tiles.terrain_type import TerrainType
-from src.entities.units.base_unit import BaseUnit, UnitType
+from src.entities.units.base_unit import BaseUnitUI, UnitType
 from src.map.map_manager import MapManager
 
 
 class UIManager:
-    def __init__(self, game_manager):
+    def __init__(self, game):
         self.is_prepare_random_map = None
         self.map_load_filepath = None
         self.slots = None
@@ -16,7 +16,7 @@ class UIManager:
         self.action_field_input = None
         self.edge_input = None
         self.row_input = None
-        self.game_manager = game_manager
+        self.game = game
         self.menu_panel = None
         self.editor_toolbar = None
         self.popup = None
@@ -423,7 +423,7 @@ class UIManager:
                            color=color.azure)
 
             # Model display - Remove color override here too
-            slot.model_display = BaseUnit(
+            slot.model_display = BaseUnitUI(
                 position=(0, -0.1, 0.3),
                 faction=FactionType.HUMAN.name,
                 unit_type=UnitType.INFANTRY,
@@ -439,7 +439,7 @@ class UIManager:
                 faction = self.factions[s.current_faction_index]
                 s.faction_label.text = faction.name
                 s.model_display.owner = faction.name
-                s.model_display.model = BaseUnit.get_model_for_unit(slot.model_display.type, faction.name)
+                s.model_display.model = BaseUnitUI.get_model_for_unit(slot.model_display.type, faction.name)
                 # Don't set color here either - let the model keep its original colors
 
             left.on_click = Func(self.prev_faction, slot, update_model)

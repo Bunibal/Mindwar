@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 from ursina import *
 
 from src import settings
-from src.entities.tiles.base_tile import BaseTile
+from src.entities.tiles.base_tile import BaseTileUI
 from src.entities.tiles.feature_type import ACTION_FIELDS
 from src.entities.tiles.feature_type import FLAT_TERRAINS
 from src.entities.tiles.terrain_type import TerrainType
@@ -33,7 +33,7 @@ class MapManager:
         for q in range(self.rows):
             for r in range(self.cols):
                 terrain = self.random_terrain(weights=self.terrain_weights)
-                tile = BaseTile(grid_position=(q, r), terrain=terrain)
+                tile = BaseTileUI(grid_position=(q, r), terrain=terrain)
                 self.tiles.append(tile)
                 if (q, r) in [(1, 1), (self.rows - 2, self.cols - 2), (self.rows - 2, 1), (1, self.cols - 2)]:
                     tile.mark_as_action_field()
@@ -395,7 +395,7 @@ class MapManager:
     def from_dict(self, data):
         self.tiles = []
         for tile_data in data['tiles']:
-            tile = BaseTile(**tile_data)
+            tile = BaseTileUI(**tile_data)
             tile.from_dict(tile_data)
             self.tiles.append(tile)
         self.action_fields = [self.get_tile_by_grid_position(pos) for pos in data['action_fields']]
