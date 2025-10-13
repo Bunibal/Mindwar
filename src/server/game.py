@@ -1,5 +1,6 @@
+from src.entities.factions.base_faction import FactionType
 from src.entities.units.base_unit_logic import UnitType, BaseUnitLogic
-from server.gamestate import GameState
+from src.server.gamestate import GameState
 from src.map import map_manager_logic
 
 
@@ -9,11 +10,10 @@ class Game:
         self.chosen_factions = None
         self.map_manager = None
 
-    def setup_game(self):
-        self.game_state = "game"
-        self.game_map = []
 
     def start_game(self):
+        self.game_state = "game"
+        self.game_map = []
         self.prepare_game()
         self.current_player = self.chosen_factions[0]
 
@@ -21,7 +21,7 @@ class Game:
         self.load_start_units()
 
     def load_start_units(self):
-        for player in self.chosen_factions:
+        for player in [FactionType.HUMAN]: #self.chosen_factions:
             start_config = player.units_start_config
             for config in start_config:
                 if config["all_fields"] is True:

@@ -1,11 +1,11 @@
 from ursina import *
 from ursina import Vec3
 
-from server.game import Game
+from src.server.game import Game
 from src.entities.units.base_unit import UnitType, BaseUnitUI
-from server.gamestate import GameState
+from src.server.gamestate import GameState
 from src.map import map_manager
-from src.ui.ui_manager import UIManager
+from src.client.ui.ui_manager import UIManager
 
 
 class GameManager:

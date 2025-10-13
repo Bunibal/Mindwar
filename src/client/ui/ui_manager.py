@@ -8,7 +8,7 @@ from src.map.map_manager import MapManager
 
 
 class UIManager:
-    def __init__(self, game):
+    def __init__(self, rcp_peer):
         self.is_prepare_random_map = None
         self.map_load_filepath = None
         self.slots = None
@@ -16,7 +16,7 @@ class UIManager:
         self.action_field_input = None
         self.edge_input = None
         self.row_input = None
-        self.game = game
+        self.rcp_peer = rcp_peer
         self.menu_panel = None
         self.editor_toolbar = None
         self.popup = None
@@ -35,7 +35,7 @@ class UIManager:
         )
 
         button_labels = [
-            'Start Game locally',
+            'Start Game',
             'Start Map Editor',
             'Quit'
         ]
@@ -116,7 +116,7 @@ class UIManager:
 
     def _button_callback(self, label):
         return {
-            'Start Game locally': 'start_game_locally',
+            'Start Game': 'start_game_locally',
             'Start Map Editor': 'start_map_editor',
             'Random Map': 'generate_random_map',
             'Save Map': 'save_current_map',
@@ -124,8 +124,17 @@ class UIManager:
             'Quit': 'quit_game'
         }[label]
 
+    def get_server(self, raise_error=True):
+        conns = self.rcp_peer.get_connections()
+        if conns:
+            return conns[0]
+        if raise_error:
+            raise Exception("No server connection available.")
+        return None
+    
     def start_game_locally(self):
-        self.game_manager.setup_game_locally()
+        print(type(self.get_server()))
+        self.rcp_peer.start_game(self.get_server())
 
     def quit_game(self):
         application.quit()
