@@ -24,6 +24,8 @@ register_functions(peer, GAMEACTIONS_FUNCTIONS_TO_REGISTER)
 
 game = Game()
 
+lobbies = []
+
 
 peer.start("localhost", 8080, is_host=True)
 

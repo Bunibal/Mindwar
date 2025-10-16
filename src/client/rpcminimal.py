@@ -11,10 +11,11 @@ peer = RPCPeer()
 
 @rpc(peer)
 def message(connection, time_received, msg: str):
-    message = Text(text=f"Received: {msg}", origin=(0, 0), y=-0.05-len(messages)*0.05)
-    messages.append(message)
-    s = Sequence(1, Func(message.fade_out, duration=0.5), 0.5, Func(destroy, message), Func(messages.pop, 0))
-    s.start()
+    # message = Text(text=f"Received: {msg}", origin=(0, 0), y=-0.05-len(messages)*0.05)
+    # messages.append(message)
+    # s = Sequence(1, Func(message.fade_out, duration=0.5), 0.5, Func(destroy, message), Func(messages.pop, 0))
+    # s.start()
+    print(msg)
 
 def update():
     peer.update()

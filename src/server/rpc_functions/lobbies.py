@@ -1,4 +1,5 @@
 LOBBY_FUNCTIONS_TO_REGISTER = []
+
 def rpcreg(f):
     LOBBY_FUNCTIONS_TO_REGISTER.append(f)
     return f
@@ -13,6 +14,7 @@ def get_lobby_list(connection, time_received):
 @rpcreg
 def create_lobby(connection, time_received, lobby_name: str, max_players: int):
     print(f"Player {connection.address} created lobby {lobby_name} with max players {max_players}")
+    lobbies.append({'name': lobby_name, 'max_players': max_players, 'players': [connection.address]})
     # Create lobby
     # Add lobby to list/dict
     # Notify others
@@ -20,6 +22,9 @@ def create_lobby(connection, time_received, lobby_name: str, max_players: int):
 @rpcreg
 def join_lobby(connection, time_received, lobby_id: int):
     print(f"Player {connection.address} joined lobby {lobby_id}")
+    peer = connection.rpc_peer
+    for c in peer.get_connections():
+        peer.message(c, f"Joined lobby {lobby_id}")
     # Add player to lobby
     # Notify others in lobby
     # Send lobby info to player
