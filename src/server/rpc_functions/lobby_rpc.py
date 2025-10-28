@@ -28,6 +28,7 @@ def on_disconnect(connection, time_received):
 @rpcreg
 def get_lobby_list(connection, time_received):
     print(f"Player {connection.address} requested lobby list")
+    
     # Send list of open lobbies
     # Hope that return works
 
