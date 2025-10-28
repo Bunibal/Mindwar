@@ -30,12 +30,7 @@ class LobbyManager:
             logger.warning(f"Lobby with name '{lobby_name}' already exists.")
             raise ValueError(f"Lobby with name '{lobby_name}' already exists.")
         lobby = Lobby(lobby_name, max_players)
-        self.lobbies[lobby.lobby_id] = {
-            'name': lobby_name,
-            'max_players': max_players,
-            'players': [],
-            'object': lobby
-        }
+        self.lobbies[lobby.lobby_id] = lobby
         return lobby.lobby_id
 
     def join_lobby(self, lobby_id, player_id):

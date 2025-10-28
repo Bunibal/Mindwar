@@ -66,7 +66,7 @@ class Game:
         state = {
             "current_player": self.current_player.name if self.current_player else None,
             "chosen_factions": [player.name for player in self.chosen_factions] if self.chosen_factions else [],
-            "map": [tile.to_dict() for tile in self.game_map] if self.game_map else [],
+            "map": [tile.to_string() for tile in self.game_map] if self.game_map else [],
             "game_state": self.game_state,
         }
         return state

@@ -26,13 +26,13 @@ class LobbyPlayer:
         self.faction = FactionType.NONE
         self.player_status = PlayerStatus.NOT_READY
 
-    def to_dict(self):
-        return {
+    def to_string(self):
+        return """{
             "player_id": self.player_id,
             "current_lobby": self.current_lobby,
             "faction": self.faction.value,
             "status": self.player_status.value,
-        }
+        }"""
 
 
 class Lobby:
@@ -57,7 +57,7 @@ class Lobby:
             "lobby_name": self.lobby_name,
             "max_players": self.max_players,
             "game_settings": self.game_settings,
-            "players": [player.to_dict() for player in self.players],
+            "players": [player.to_string() for player in self.players],
         }
 
 

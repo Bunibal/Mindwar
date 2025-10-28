@@ -8,7 +8,6 @@ from src.server.rpc_functions.lobby_rpc import LOBBY_FUNCTIONS_TO_REGISTER
 
 peer = RPCPeer()
 
-lobbies.set_peer(peer)
 
 register_functions(peer, LOBBY_FUNCTIONS_TO_REGISTER)
 register_functions(peer, COMMUNICATION_FUNCTIONS_TO_REGISTER)
@@ -18,7 +17,7 @@ game = Game()
 
 lobbies = []
 
-peer.start("localhost", 8080, is_host=True)
+peer.start("0.0.0.0", 8080, is_host=True)
 
 if __name__ == '__main__':
     while True:

@@ -385,7 +385,7 @@ class MapManager:
 
     def to_dict(self):
         return {
-            'tiles': [tile.to_dict() for tile in self.tiles],
+            'tiles': [tile.to_string() for tile in self.tiles],
             'action_fields': [tile.grid_position for tile in self.action_fields],
             'street_network': nx.to_dict_of_lists(self.street_graph),
             'rows': self.rows,
