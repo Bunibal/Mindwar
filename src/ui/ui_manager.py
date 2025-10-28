@@ -7,6 +7,7 @@ from src.entities.units.base_unit import BaseUnit, UnitType
 from src.map.map_manager import MapManager
 
 
+
 class UIManager:
     def __init__(self, game_manager):
         self.is_prepare_random_map = None
@@ -389,8 +390,7 @@ class UIManager:
         self.clear_ui()
 
         # Add proper lighting for the faction selection screen
-        DirectionalLight().look_at(Vec3(1, -1, -1))
-        AmbientLight(color=color.rgba(120, 120, 120, 0.5))  # Add ambient light for better visibility
+        DirectionalLight().look_at(Vec3(0.3, 1, 1))
 
         self.slots = []
         self.factions = [BaseFaction(name=faction.name, faction_type=faction) for faction in FactionType]

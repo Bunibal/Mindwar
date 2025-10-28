@@ -16,12 +16,11 @@ class UnitType(Enum):
 
 class BaseUnit(Entity):
     def __init__(self, faction: str, unit_type: UnitType,
-                 scale=19, grid_position: tuple = (0, 0), position: tuple = None, rotation=(90, 0, 180), **kwargs):
+                 scale=1.5, grid_position: tuple = (0, 0), position: tuple = None, rotation=(90, 0, 180), **kwargs):
         self.grid_position = grid_position
         self.type = unit_type
         self.faction = faction.lower()
         self.moves_left = 2
-        self.color = color.white
 
         super().__init__(
             model=self.get_model_for_unit(unit_type, self.faction),
@@ -29,6 +28,7 @@ class BaseUnit(Entity):
             position=world_calculations.grid_to_world(*grid_position) if position is None else position,
             origin=(0, 0),
             rotation=rotation,
+            color=color.white,
             **kwargs
         )
         print(f"Unit created: {self.model}")
