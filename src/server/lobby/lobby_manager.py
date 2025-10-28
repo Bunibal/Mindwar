@@ -4,7 +4,6 @@ from src.utils.logger import logger
 
 
 class LobbyManager:
-
     def __init__(self):
         self.players = {}
         self.lobbies = {}
