@@ -55,10 +55,24 @@ def send_lobby_info(connection, time_received, lobby_id: str):
     lobby = LOBBY_MANAGER.get_lobby_info(connection, lobby_id)
     send_data(connection, MessageType.LOBBY_INFO, lobby)
 
-def send_data(connection, message_type: MessageType, message, send_to_all=False):
-    if send_to_all:
-        for con in connection.rpc_peer.get_connections():
-            con.rpc_peer.send_data(connection, message_type.name, json.dumps(message, default=serialize))
+
+def send_data(connection, message_type: MessageType, message, send_to_lobby=False):
+    if send_to_lobby:
+        # Get the player's lobby
+        player = LOBBY_MANAGER._get_player_from_connection(connection)
+        lobby = LOBBY_MANAGER._get_lobby_from_player(player)
+
+        if lobby:
+            # Send to all players in the same lobby
+            for lobby_player in lobby.players:
+                lobby_player.connection.rpc_peer.send_data(
+                    lobby_player.connection,
+                    message_type.name,
+                    json.dumps(message, default=serialize)
+                )
+        else:
+            # Player not in a lobby, send only to them
+            connection.rpc_peer.send_data(connection, message_type.name, json.dumps(message, default=serialize))
     else:
         connection.rpc_peer.send_data(connection, message_type.name, json.dumps(message, default=serialize))
 

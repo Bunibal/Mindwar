@@ -8,4 +8,4 @@ def send_lobby_list(lobbies: list[str], ui_manager):
     print(f"Received lobby list from server: {lobbies}")
 
     ui_manager.lobby_list_received(lobbies)
-    # Update local lobby list UI
+    # Update local lobby list UIˆ
