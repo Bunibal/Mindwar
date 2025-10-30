@@ -61,15 +61,16 @@ class LobbyManager:
         if any(lobby.lobby_name == lobby_name for lobby in self.lobbies.values()):
             logger.warning(f"Lobby with name '{lobby_name}' already exists.")
             raise ValueError(f"Lobby with name '{lobby_name}' already exists.")
-        lobby = Lobby(lobby_name, max_players)
+        lobby = Lobby(player.player_id, lobby_name, max_players)
         self.lobbies[lobby.lobby_id] = lobby
         return lobby.lobby_id
 
-    def join_lobby(self, lobby_id, player_id):
+    def join_lobby(self, connection, lobby_id):
+        player = self._get_player_from_connection(connection)
         if lobby_id in self.lobbies:
             lobby = self.lobbies[lobby_id]
             if len(lobby.players) < lobby.max_players:
-                lobby.players.append(self.players[player_id])
+                lobby.players.append(player)
                 return lobby
             else:
                 logger.info(f"Lobby '{lobby.lobby_name}' is full.")
@@ -82,13 +83,14 @@ class LobbyManager:
         lobby = self._get_lobby_from_player(player_id)
         lobby.players.remove(self.players[player_id])
 
-    def get_lobby_info(self, lobby_id, player_id):
+    def get_lobby_info(self, connection, lobby_id):
+        player = self._get_player_from_connection(connection)
         if lobby_id in self.lobbies:
-            if player_id in self.lobbies[lobby_id].lobby_host:
-                logger.debug(f"Player {player_id} started lobby with lobby id {lobby_id}.")
+            if player.player_id in self.lobbies[lobby_id].lobby_host:
+                logger.debug(f"Player {player.player_id} started lobby with lobby id {lobby_id}.")
                 return self.lobbies[lobby_id]
             else:
-                logger.warning(f"Player {player_id} is not the host of lobby {lobby_id}.")
+                logger.warning(f"Player {player.player_id} is not the host of lobby {lobby_id}.")
                 raise ValueError("Only the lobby host can get lobby info.")
         else:
             logger.warning(f"Lobby with id '{lobby_id}' does not exist.")

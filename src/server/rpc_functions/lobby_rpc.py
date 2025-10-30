@@ -1,6 +1,8 @@
 import enum
 import json
 
+import ursina.networking
+
 from src.common.messages_from_server.message_types import MessageType
 from src.server.lobby import lobby
 
@@ -48,8 +50,10 @@ def create_lobby(connection, time_received, lobby_name: str, max_players: int):
     send_data(connection, MessageType.LOBBY_INFO, lobby.to_json(LOBBY_MANAGER.lobbies[lobby_id]))
 
 
-# @rpcreg
-# def send_lobby_info(connection, time_received):
+@rpcreg
+def send_lobby_info(connection, time_received, lobby_id: str):
+    lobby = LOBBY_MANAGER.get_lobby_info(connection, lobby_id)
+    send_data(connection, MessageType.LOBBY_INFO, lobby)
 
 def send_data(connection, message_type: MessageType, message, send_to_all=False):
     if send_to_all:
@@ -60,9 +64,9 @@ def send_data(connection, message_type: MessageType, message, send_to_all=False)
 
 
 @rpcreg
-def join_lobby(connection, time_received, lobby_id: str, player_id: str):
+def join_lobby(connection, time_received, lobby_id: str):
     print(f"Player {connection.address} joined lobby {lobby_id}")
-    lobby = LOBBY_MANAGER.join_lobby(lobby_id, player_id)
+    lobby = LOBBY_MANAGER.join_lobby(connection, lobby_id)
     send_data(connection, MessageType.LOBBY_INFO, lobby)
 
 
@@ -108,6 +112,8 @@ def choose_faction(connection, time_received, faction: str):
 
 def serialize(obj):
     # If the object is a basic type, return as is
+    if isinstance(obj, ursina.networking.Connection):
+        return None
     if isinstance(obj, (int, float, str, bool, type(None))):
         return obj
     # If the object is a list or tuple, serialize each item recursively
