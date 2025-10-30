@@ -695,7 +695,6 @@ class UIManager:
             position=(0, 0),
             z=0
         )
-
         Text(
             text="Connect to Server",
             parent=self.lobby_panel,
@@ -704,13 +703,31 @@ class UIManager:
             origin=(0, 0),
             color=color.white
         )
+        # Name input
+        Text(
+            text="Name:",
+            parent=self.lobby_panel,
+            x = -.25,
+            y=0.,
+            scale=1,
+            origin=(-0.5, 0),
+            color=color.light_gray
+        )
+
+        self.name_input = InputField(
+            parent=self.lobby_panel,
+            default_value="The szabster",
+            x=0.1,
+            y=0.35,
+            scale=(0.35, 0.08)
+        )
 
         # Server IP input
         Text(
             text="Server IP:",
             parent=self.lobby_panel,
             x=-0.25,
-            y=0.2,
+            y=0.35,
             origin=(-0.5, 0),
             scale=1,
             color=color.light_gray
@@ -915,26 +932,23 @@ class UIManager:
                 )
             else:
                 # Display each lobby
-                for i, lobby_str in enumerate(lobbies):
-                    try:
-                        # Parse the lobby dict string
-                        lobby_dict = ast.literal_eval(lobby_str)
-                        lobby_name = lobby_dict.get('name', 'Unknown')
-                        lobby_id = lobby_dict.get('id', 'unknown')
-                        current_players = lobby_dict.get('current_players', 0)
-                        max_players = lobby_dict.get('max_players', 4)
+                for i, lobby_dict in enumerate(lobbies.values()):
+                    # Parse the lobby dict string
+                    lobby_name = lobby_dict.get('lobby_name')
+                    lobby_id = lobby_dict.get('lobby_id')
+                    current_players = len(lobby_dict.get('players'))
+                    max_players = lobby_dict.get('max_players')
 
-                        # Create lobby entry button
-                        lobby_btn = Button(
-                            text=f"{lobby_name} ({current_players}/{max_players})",
-                            parent=self.lobby_list_container,
-                            y=0.15 - i * 0.12,
-                            scale=(0.6, 0.1),
-                            color=color.azure if current_players < max_players else color.gray,
-                            on_click=Func(self.join_lobby, lobby_id) if current_players < max_players else None
-                        )
-                    except Exception as e:
-                        print(f"Error parsing lobby: {e}")
+                    # Create lobby entry button
+                    lobby_btn = Button(
+                        text=f"{lobby_name} ({current_players}/{max_players})",
+                        parent=self.lobby_list_container,
+                        y=0.15 - i * 0.12,
+                        scale=(0.6, 0.1),
+                        color=color.azure if current_players < max_players else color.gray,
+                        on_click=Func(self.join_lobby, lobby_id) if current_players < max_players else None
+                    )
+
 
     def open_create_lobby_popup(self):
         """Open popup to create a new lobby"""
@@ -1058,7 +1072,7 @@ class UIManager:
         try:
             server = self.get_server()
             self.current_lobby_id = lobby_id
-            self.rcp_peer.join_lobby(server, lobby_id, str(self.player_id))
+            self.rcp_peer.join_lobby(server, lobby_id)
             print(f"Joining lobby {lobby_id}")
             # Show lobby detail screen
             self.show_lobby_detail()

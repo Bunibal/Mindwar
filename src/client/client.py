@@ -3,7 +3,7 @@ from panda3d.core import loadPrcFileData, WindowProperties
 from ursina import *
 from ursina.networking import *
 
-from common.messages_from_server.message_types import MessageType
+from src.common.messages_from_server.message_types import MessageType
 from src.client.ui.ui_manager import UIManager
 
 # --- Panda3D Config ---
@@ -30,7 +30,7 @@ def on_connect(connection, time_received):
 
 @rpc(peer)
 def send_data(connection, time_received, message_type:str, msg: str):
-    f = getattr(MessageType, message_type, None)
+    f = getattr(MessageType, message_type, None).value[0] #[0] since we have a singleton tuple
     if f:
         msg = json.loads(msg)
         f(msg, UI_MANAGER)
