@@ -780,8 +780,8 @@ class UIManager:
             self.connection_status_text.color = color.red
             return
 
-        try:
-            self.rcp_peer.start(self.server_ip, self.server_port, is_host=False)
+        self.rcp_peer.start(self.server_ip, self.server_port, is_host=False)
+        if self.rcp_peer.is_running():
             self.is_connected = True
             self.connection_status_text.text = f"Connected to {self.server_ip}:{self.server_port}"
             self.connection_status_text.color = color.lime
@@ -789,10 +789,10 @@ class UIManager:
 
             # Wait a moment for connection to establish, then show lobby browser
             invoke(self.show_lobby_browser, delay=0.5)
-        except Exception as e:
-            self.connection_status_text.text = f"Connection failed: {str(e)}"
+        else:
+            self.connection_status_text.text = f"Connection failed."
             self.connection_status_text.color = color.red
-            print(f"Failed to connect: {e}")
+            print(f"Failed to connect to server at {self.server_ip}:{self.server_port}")
 
     def show_lobby_browser(self):
         """Show the lobby browser with list of available lobbies"""
