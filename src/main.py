@@ -2,7 +2,7 @@ from panda3d.core import loadPrcFileData, WindowProperties
 from ursina import *
 
 from src.game_manager import GameManager
-from src.ui.ui_manager import input_handle
+from src.client.ui.ui_manager import input_handle
 
 # --- Panda3D Config ---
 loadPrcFileData('', 'window-title Mindwar')

@@ -1,4 +1,5 @@
 import json
+import random
 import uuid
 from enum import Enum
 
@@ -21,15 +22,14 @@ class PlayerStatus(Enum):
 class LobbyPlayer:
     def __init__(self, connection):
         self.player_id = str(uuid.uuid4())
+        self.name = "random-" + str(random.randint(0, 9))
         self.connection = connection
-        self.current_lobby = None
         self.faction = FactionType.NONE
         self.player_status = PlayerStatus.NOT_READY
 
     def to_string(self):
         return """{
             "player_id": self.player_id,
-            "current_lobby": self.current_lobby,
             "faction": self.faction.value,
             "status": self.player_status.value,
         }"""

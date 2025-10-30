@@ -1,3 +1,7 @@
+import enum
+import json
+
+from src.common.messages_from_server.message_types import MessageType
 from src.server.lobby import lobby
 
 LOBBY_FUNCTIONS_TO_REGISTER = []
@@ -13,10 +17,7 @@ def rpcreg(f):
 @rpcreg
 def on_connect(connection, time_received):
     print(f"Player {connection.address} connected with name")
-    player_id = LOBBY_MANAGER.connect_player(connection)
-    player = LOBBY_MANAGER.players[player_id]
-    print(player)
-    print(f"Your player id is {player_id}")
+    player = LOBBY_MANAGER.connect_player(connection)
     connection.rpc_peer.send_player(connection, player.to_string())
 
 
@@ -28,39 +29,41 @@ def on_disconnect(connection, time_received):
 
 
 @rpcreg
+def set_player_name(connection, time_received, player_name: str):
+    LOBBY_MANAGER.set_player_name(connection, player_name)
+
+
+@rpcreg
 def get_lobby_list(connection, time_received):
     print(f"Player {connection.address} requested lobby list")
-    send_lobby_list(connection)
-
-
-def send_lobby_list(connection):
-    lobbies = []
-    for lobby in LOBBY_MANAGER.lobbies.values():
-        lobbies.append(str(lobby.to_dict()))
-    connection.rpc_peer.send_lobby_list(connection, lobbies)
+    # lobbies = []
+    # for lobby in LOBBY_MANAGER.lobbies.values():
+    #     lobbies.append(str(lobby.to_dict()))
+    send_data(connection, MessageType.LOBBY_LIST, LOBBY_MANAGER.lobbies)
 
 
 @rpcreg
 def create_lobby(connection, time_received, lobby_name: str, max_players: int):
-    lobby_id = LOBBY_MANAGER.create_lobby(lobby_name, max_players)
-    print(
-        f"Player {connection.address} created lobby {lobby_name} with max players {max_players} and lobby ID {lobby_id}")
-    send_lobby_info(connection, lobby_id)
+    lobby_id = LOBBY_MANAGER.create_lobby(connection, lobby_name, max_players)
+    send_data(connection, MessageType.LOBBY_INFO, lobby.to_json(LOBBY_MANAGER.lobbies[lobby_id]))
 
 
-def send_lobby_info(connection, lobby_id):
-    connection.rpc_peer.message(connection, lobby.to_json(LOBBY_MANAGER.lobbies[lobby_id]))
+# @rpcreg
+# def send_lobby_info(connection, time_received):
+
+def send_data(connection, message_type: MessageType, message, send_to_all=False):
+    if send_to_all:
+        for con in connection.rpc_peer.get_connections():
+            con.rpc_peer.send_data(connection, message_type.name, json.dumps(message, default=serialize))
+    else:
+        connection.rpc_peer.send_data(connection, message_type.name, json.dumps(message, default=serialize))
 
 
 @rpcreg
 def join_lobby(connection, time_received, lobby_id: str, player_id: str):
     print(f"Player {connection.address} joined lobby {lobby_id}")
-    peer = connection.rpc_peer
-    for c in peer.get_connections():
-        peer.message(c, f"Joined lobby {lobby_id}")
-    # Add player to lobby
-    # Notify others in lobby
-    # Send lobby info to player
+    lobby = LOBBY_MANAGER.join_lobby(lobby_id, player_id)
+    send_data(connection, MessageType.LOBBY_INFO, lobby)
 
 
 @rpcreg
@@ -94,9 +97,30 @@ def choose_faction(connection, time_received, faction: str):
     # Update player faction
     # Notify others in lobby
 
+
 # @rpcreg
 # def press_start_button(connection, time_received):
 #     print(f"Player {connection.address} pressed start button")
 #     # Check if all players are ready
 #     # If yes, start game
 #     game.start_game()
+
+
+def serialize(obj):
+    # If the object is a basic type, return as is
+    if isinstance(obj, (int, float, str, bool, type(None))):
+        return obj
+    # If the object is a list or tuple, serialize each item recursively
+    elif isinstance(obj, (list, tuple)):
+        return [serialize(item) for item in obj]
+    # If the object is a dictionary, serialize keys and values recursively
+    elif isinstance(obj, dict):
+        return {serialize(key): serialize(value) for key, value in obj.items()}
+    # For any other object, try to serialize its __dict__ recursively
+    elif isinstance(obj, enum.Enum):
+        return obj.name
+    elif hasattr(obj, '__dict__'):
+        return {key: serialize(value) for key, value in obj.__dict__.items()}
+    else:
+        # Fallback to string representation if type is not serializable
+        return str(obj)
