@@ -2,9 +2,7 @@ from panda3d.core import loadPrcFileData, WindowProperties
 from ursina import *
 from ursina.networking import *
 
-from src.server.lobby.lobby import LobbyPlayer
-from src.game_manager import GameManager
-from src.client.ui.ui_manager import UIManager, input_handle
+from src.client.ui.ui_manager import UIManager
 
 # --- Panda3D Config ---
 loadPrcFileData('', 'window-title Mindwar')
@@ -15,40 +13,46 @@ loadPrcFileData('', 'win-origin 100 100')
 loadPrcFileData('', 'show-frame-rate-meter 0')
 loadPrcFileData('', 'window-type none')  # prevent premature window creation
 
-
 # --- Start the game ---
 
 peer = RPCPeer()
 UI_MANAGER = UIManager(peer)
+
 
 @rpc(peer)
 def send_gamestate(connection, time_received, state: str):
     print(f"Received gamestate from server: {state}")
     # Update local gamestate accordingly
 
+
 @rpc(peer)
 def send_message(connection, time_received, player_id: int, message: str):
     print(f"Message from player {player_id}: {message}")
     # Display message in chat UI
+
 
 @rpc(peer)
 def message(connection, time_received, msg: str):
     print(f"Received: {msg}")
     # Display message in chat UI
 
+
 @rpc(peer)
 def send_player(connection, time_received, player_info: str):
     print(f"Received player info from server: {player_info}")
     # Update local player info
+
+
 # @rpc(peer)
 # def send_anything(connection, time_received, msg_type:str, data: str):
 #     execute(connection, time_received, msg_type, data, UI_MANAGER)
 #     print(f"Received data from server: {data}")
-    # Process received data
+# Process received data
 @rpc(peer)
 def do_action(connection, time_received, action: str, params: dict):
     print(f"Action from server: {action} with params {params}")
     # Execute action locally
+
 
 @rpc(peer)
 def send_lobby_list(connection, time_received, lobbies: list[str]):
@@ -57,17 +61,20 @@ def send_lobby_list(connection, time_received, lobbies: list[str]):
     UI_MANAGER.lobby_list_received(lobbies)
     # Update local lobby list UI
 
+
 @rpc(peer)
 def send_lobby_info(connection, time_received, lobby_info: str):
     print(f"Received lobby info from server: {lobby_info}")
     UI_MANAGER.lobby_info_received(lobby_info)
     # Update local lobby info UI
 
+
 def main():
     global input, update
     app = Ursina(borderless=False)
 
-    peer.start("192.168.1.179", 8080, is_host=False)
+    # Connection will be initiated from the UI when user clicks "Multiplayer"
+    # peer.start() will be called from UI_MANAGER.connect_to_server()
     window.exit_button.visible = False
 
     props = WindowProperties()
@@ -87,9 +94,7 @@ def main():
     from ursina import application
     application.base.win.requestProperties(props)
 
-    
     UI_MANAGER.start_menu()
-
 
     def input(key):
         if key == 's':
@@ -98,11 +103,10 @@ def main():
             peer.create_lobby(peer.get_connections()[0], "Test Lobby", 4)
         if key == "r":
             peer.get_lobby_list(peer.get_connections()[0])
-        #input_handle(key, ui_manager)
+        # input_handle(key, ui_manager)
 
     def update():
         peer.update()
-
 
     app.run()
 

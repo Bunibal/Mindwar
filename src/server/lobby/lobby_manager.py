@@ -25,7 +25,7 @@ class LobbyManager:
             raise ValueError(f"Player with id '{player_id}' does not exist.")
 
     def create_lobby(self, lobby_name, max_players):
-        if any(lobby['lobby_name'] == lobby_name for lobby in self.lobbies.values()):
+        if any(lobby.lobby_name == lobby_name for lobby in self.lobbies.values()):
             logger.warning(f"Lobby with name '{lobby_name}' already exists.")
             raise ValueError(f"Lobby with name '{lobby_name}' already exists.")
         lobby = Lobby(lobby_name, max_players)

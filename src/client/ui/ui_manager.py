@@ -1,4 +1,5 @@
 from ursina import *
+import ast
 
 from src.entities.factions.base_faction import BaseFaction
 from src.entities.factions.base_faction import FactionType
@@ -21,6 +22,16 @@ class UIManager:
         self.editor_toolbar = None
         self.popup = None
 
+        # Lobby UI state
+        self.lobby_panel = None
+        self.lobby_list_container = None
+        self.current_lobbies = []
+        self.current_lobby_id = None
+        self.player_id = None
+        self.server_ip = "192.168.1.179"
+        self.server_port = 8080
+        self.is_connected = False
+
     def start_menu(self):
         window.title = "Mindwar - Main Menu"
         self.menu_panel = Entity(
@@ -36,6 +47,7 @@ class UIManager:
 
         button_labels = [
             'Start Game',
+            'Multiplayer',
             'Start Map Editor',
             'Quit'
         ]
@@ -44,7 +56,7 @@ class UIManager:
             Button(
                 text=label,
                 parent=self.menu_panel,
-                y=0.125 - i * 0.15,  # space out evenly
+                y=0.175 - i * 0.12,  # space out evenly
                 scale=(0.3, 0.05),
                 origin=(0, 0),
                 on_click=getattr(self, self._button_callback(label))
@@ -117,6 +129,7 @@ class UIManager:
     def _button_callback(self, label):
         return {
             'Start Game': 'start_game_locally',
+            'Multiplayer': 'show_connection_screen',
             'Start Map Editor': 'start_map_editor',
             'Random Map': 'generate_random_map',
             'Save Map': 'save_current_map',
@@ -664,6 +677,503 @@ class UIManager:
             z=-1,
             on_click=Func(self.close_popup)
         )
+
+    # ===== LOBBY UI METHODS =====
+
+    def show_connection_screen(self):
+        """Show connection screen with server IP/port input"""
+        self.clear_ui()
+        window.title = "Mindwar - Connect to Server"
+
+        # Main panel
+        self.lobby_panel = Entity(
+            parent=camera.ui,
+            model='quad',
+            color=color.rgba(40, 40, 50, 220),
+            scale=(0.8, 0.9),
+            position=(0, 0),
+            z=0
+        )
+
+        Text(
+            text="Connect to Server",
+            parent=self.lobby_panel,
+            y=0.4,
+            scale=2,
+            origin=(0, 0),
+            color=color.white
+        )
+
+        # Server IP input
+        Text(
+            text="Server IP:",
+            parent=self.lobby_panel,
+            x=-0.25,
+            y=0.2,
+            origin=(-0.5, 0),
+            scale=1,
+            color=color.light_gray
+        )
+        self.server_ip_input = InputField(
+            parent=self.lobby_panel,
+            default_value=self.server_ip,
+            x=0.1,
+            y=0.2,
+            scale=(0.35, 0.08)
+        )
+
+        # Server Port input
+        Text(
+            text="Port:",
+            parent=self.lobby_panel,
+            x=-0.25,
+            y=0.05,
+            origin=(-0.5, 0),
+            scale=1,
+            color=color.light_gray
+        )
+        self.server_port_input = InputField(
+            parent=self.lobby_panel,
+            default_value=str(self.server_port),
+            x=0.1,
+            y=0.05,
+            scale=(0.35, 0.08)
+        )
+
+        # Connection status text
+        self.connection_status_text = Text(
+            text="Not Connected",
+            parent=self.lobby_panel,
+            y=-0.1,
+            scale=1.2,
+            color=color.red,
+            origin=(0, 0)
+        )
+
+        # Connect button
+        Button(
+            text="Connect",
+            parent=self.lobby_panel,
+            y=-0.25,
+            scale=(0.3, 0.08),
+            color=color.lime,
+            on_click=self.connect_to_server
+        )
+
+        # Back button
+        Button(
+            text="Back to Main Menu",
+            parent=self.lobby_panel,
+            y=-0.38,
+            scale=(0.3, 0.08),
+            color=color.gray,
+            on_click=self.return_from_lobby
+        )
+
+    def connect_to_server(self):
+        """Attempt to connect to the server"""
+        self.server_ip = self.server_ip_input.text.strip()
+        try:
+            self.server_port = int(self.server_port_input.text.strip())
+        except ValueError:
+            self.connection_status_text.text = "Invalid port number"
+            self.connection_status_text.color = color.red
+            return
+
+        try:
+            self.rcp_peer.start(self.server_ip, self.server_port, is_host=False)
+            self.is_connected = True
+            self.connection_status_text.text = f"Connected to {self.server_ip}:{self.server_port}"
+            self.connection_status_text.color = color.lime
+            print(f"Connected to server at {self.server_ip}:{self.server_port}")
+
+            # Wait a moment for connection to establish, then show lobby browser
+            invoke(self.show_lobby_browser, delay=0.5)
+        except Exception as e:
+            self.connection_status_text.text = f"Connection failed: {str(e)}"
+            self.connection_status_text.color = color.red
+            print(f"Failed to connect: {e}")
+
+    def show_lobby_browser(self):
+        """Show the lobby browser with list of available lobbies"""
+        self.clear_ui()
+        window.title = "Mindwar - Lobby Browser"
+
+        # Main panel
+        self.lobby_panel = Entity(
+            parent=camera.ui,
+            model='quad',
+            color=color.rgba(40, 40, 50, 220),
+            scale=(1.4, 0.9),
+            position=(0, 0),
+            z=0
+        )
+
+        # Title
+        Text(
+            text="Available Lobbies",
+            parent=self.lobby_panel,
+            y=0.42,
+            scale=2,
+            origin=(0, 0),
+            color=color.white
+        )
+
+        # Connection status
+        Text(
+            text=f"Connected to {self.server_ip}:{self.server_port}",
+            parent=self.lobby_panel,
+            y=0.35,
+            scale=0.8,
+            origin=(0, 0),
+            color=color.lime
+        )
+
+        # Lobby list container
+        self.lobby_list_container = Entity(parent=self.lobby_panel, y=0.1)
+
+        # Initially show "Loading..." text
+        Text(
+            text="Loading lobbies...",
+            parent=self.lobby_list_container,
+            y=0,
+            color=color.light_gray
+        )
+
+        # Buttons at the bottom
+        Button(
+            text="Create Lobby",
+            parent=self.lobby_panel,
+            y=-0.38,
+            x=-0.2,
+            scale=(0.25, 0.08),
+            color=color.cyan,
+            on_click=self.open_create_lobby_popup
+        )
+
+        Button(
+            text="Refresh",
+            parent=self.lobby_panel,
+            y=-0.38,
+            x=0.2,
+            scale=(0.25, 0.08),
+            color=color.orange,
+            on_click=self.refresh_lobby_list
+        )
+
+        Button(
+            text="Disconnect",
+            parent=self.lobby_panel,
+            y=-0.38,
+            x=0.6,
+            scale=(0.25, 0.08),
+            color=color.red,
+            on_click=self.disconnect_from_server
+        )
+
+        # Request lobby list from server
+        self.refresh_lobby_list()
+
+    def refresh_lobby_list(self):
+        """Request updated lobby list from server"""
+        try:
+            server = self.get_server(raise_error=False)
+            if server:
+                self.rcp_peer.get_lobby_list(server)
+                print("Requesting lobby list from server...")
+            else:
+                print("No server connection available")
+        except Exception as e:
+            print(f"Error requesting lobby list: {e}")
+
+    def lobby_list_received(self, lobbies: list):
+        """Called when server sends lobby list"""
+        print(f"Received {len(lobbies)} lobbies")
+        self.current_lobbies = lobbies
+
+        # Clear the lobby list container
+        if self.lobby_list_container:
+            for child in self.lobby_list_container.children:
+                destroy(child)
+
+            if not lobbies:
+                Text(
+                    text="No lobbies available. Create one!",
+                    parent=self.lobby_list_container,
+                    y=0,
+                    color=color.light_gray
+                )
+            else:
+                # Display each lobby
+                for i, lobby_str in enumerate(lobbies):
+                    try:
+                        # Parse the lobby dict string
+                        lobby_dict = ast.literal_eval(lobby_str)
+                        lobby_name = lobby_dict.get('name', 'Unknown')
+                        lobby_id = lobby_dict.get('id', 'unknown')
+                        current_players = lobby_dict.get('current_players', 0)
+                        max_players = lobby_dict.get('max_players', 4)
+
+                        # Create lobby entry button
+                        lobby_btn = Button(
+                            text=f"{lobby_name} ({current_players}/{max_players})",
+                            parent=self.lobby_list_container,
+                            y=0.15 - i * 0.12,
+                            scale=(0.6, 0.1),
+                            color=color.azure if current_players < max_players else color.gray,
+                            on_click=Func(self.join_lobby, lobby_id) if current_players < max_players else None
+                        )
+                    except Exception as e:
+                        print(f"Error parsing lobby: {e}")
+
+    def open_create_lobby_popup(self):
+        """Open popup to create a new lobby"""
+        if hasattr(self, 'popup') and self.popup:
+            destroy(self.popup)
+
+        self.popup = Entity(parent=camera.ui)
+
+        # Background overlay
+        Entity(
+            parent=self.popup,
+            model='quad',
+            scale=2,
+            color=color.rgba(0, 0, 0, 180),
+            z=1
+        )
+
+        # Panel
+        panel = Entity(
+            parent=self.popup,
+            model='quad',
+            color=color.gray,
+            scale=(0.6, 0.5),
+            z=0
+        )
+
+        Text(
+            text="Create New Lobby",
+            parent=panel,
+            y=0.2,
+            scale=1.5,
+            origin=(0, 0),
+            color=color.white
+        )
+
+        # Lobby name input
+        Text(
+            text="Lobby Name:",
+            parent=panel,
+            x=-0.2,
+            y=0.05,
+            origin=(-0.5, 0),
+            scale=1,
+            color=color.black
+        )
+        self.lobby_name_input = InputField(
+            default_value='My Lobby',
+            parent=panel,
+            x=0.1,
+            y=0.05,
+            scale=(0.4, 0.08)
+        )
+
+        # Max players input
+        Text(
+            text="Max Players:",
+            parent=panel,
+            x=-0.2,
+            y=-0.1,
+            origin=(-0.5, 0),
+            scale=1,
+            color=color.black
+        )
+        self.max_players_input = InputField(
+            default_value='4',
+            parent=panel,
+            x=0.1,
+            y=-0.1,
+            scale=(0.4, 0.08)
+        )
+
+        # Create button
+        Button(
+            text='Create',
+            parent=panel,
+            y=-0.3,
+            x=-0.1,
+            scale=(0.25, 0.08),
+            color=color.lime,
+            on_click=self.confirm_create_lobby
+        )
+
+        # Cancel button
+        Button(
+            text='Cancel',
+            parent=panel,
+            y=-0.3,
+            x=0.15,
+            scale=(0.25, 0.08),
+            on_click=self.close_popup
+        )
+
+    def confirm_create_lobby(self):
+        """Send create lobby request to server"""
+        lobby_name = self.lobby_name_input.text.strip()
+        if not lobby_name:
+            print("Lobby name cannot be empty")
+            return
+
+        try:
+            max_players = int(self.max_players_input.text.strip())
+            if max_players < 2 or max_players > 8:
+                print("Max players must be between 2 and 8")
+                return
+        except ValueError:
+            print("Invalid max players number")
+            return
+
+        try:
+            server = self.get_server()
+            self.rcp_peer.create_lobby(server, lobby_name, max_players)
+            print(f"Creating lobby: {lobby_name} with {max_players} max players")
+            self.close_popup()
+            # Refresh the lobby list after a short delay
+            invoke(self.refresh_lobby_list, delay=0.5)
+        except Exception as e:
+            print(f"Error creating lobby: {e}")
+
+    def join_lobby(self, lobby_id):
+        """Join a specific lobby"""
+        try:
+            server = self.get_server()
+            self.current_lobby_id = lobby_id
+            self.rcp_peer.join_lobby(server, lobby_id, str(self.player_id))
+            print(f"Joining lobby {lobby_id}")
+            # Show lobby detail screen
+            self.show_lobby_detail()
+        except Exception as e:
+            print(f"Error joining lobby: {e}")
+
+    def show_lobby_detail(self):
+        """Show detailed view of current lobby"""
+        self.clear_ui()
+        window.title = "Mindwar - Lobby"
+
+        # Main panel
+        self.lobby_panel = Entity(
+            parent=camera.ui,
+            model='quad',
+            color=color.rgba(40, 40, 50, 220),
+            scale=(1.2, 0.9),
+            position=(0, 0),
+            z=0
+        )
+
+        # Title
+        self.lobby_title_text = Text(
+            text="Lobby",
+            parent=self.lobby_panel,
+            y=0.42,
+            scale=2,
+            origin=(0, 0),
+            color=color.white
+        )
+
+        # Player list container
+        self.lobby_player_list = Entity(parent=self.lobby_panel, y=0.1)
+
+        Text(
+            text="Waiting for lobby info...",
+            parent=self.lobby_player_list,
+            y=0,
+            color=color.light_gray
+        )
+
+        # Buttons
+        Button(
+            text="Ready",
+            parent=self.lobby_panel,
+            y=-0.38,
+            x=-0.3,
+            scale=(0.25, 0.08),
+            color=color.lime,
+            on_click=self.set_ready
+        )
+
+        Button(
+            text="Not Ready",
+            parent=self.lobby_panel,
+            y=-0.38,
+            x=0,
+            scale=(0.25, 0.08),
+            color=color.orange,
+            on_click=self.set_not_ready
+        )
+
+        Button(
+            text="Leave Lobby",
+            parent=self.lobby_panel,
+            y=-0.38,
+            x=0.3,
+            scale=(0.25, 0.08),
+            color=color.red,
+            on_click=self.leave_lobby
+        )
+
+    def lobby_info_received(self, lobby_info: str):
+        """Called when server sends lobby info"""
+        print(f"Received lobby info: {lobby_info}")
+        # TODO: Parse and display lobby info
+        # Update lobby_title_text and lobby_player_list
+
+    def set_ready(self):
+        """Set player status to ready"""
+        try:
+            server = self.get_server()
+            self.rcp_peer.set_ready_status(server, True)
+            print("Set ready status: True")
+        except Exception as e:
+            print(f"Error setting ready status: {e}")
+
+    def set_not_ready(self):
+        """Set player status to not ready"""
+        try:
+            server = self.get_server()
+            self.rcp_peer.set_ready_status(server, False)
+            print("Set ready status: False")
+        except Exception as e:
+            print(f"Error setting ready status: {e}")
+
+    def leave_lobby(self):
+        """Leave current lobby"""
+        try:
+            server = self.get_server()
+            self.rcp_peer.leave_lobby(server)
+            self.current_lobby_id = None
+            print("Left lobby")
+            # Return to lobby browser
+            self.show_lobby_browser()
+        except Exception as e:
+            print(f"Error leaving lobby: {e}")
+
+    def disconnect_from_server(self):
+        """Disconnect from server and return to connection screen"""
+        try:
+            # TODO: Properly close connection
+            self.is_connected = False
+            self.current_lobby_id = None
+            print("Disconnected from server")
+            self.show_connection_screen()
+        except Exception as e:
+            print(f"Error disconnecting: {e}")
+
+    def return_from_lobby(self):
+        """Return to main menu from lobby system"""
+        if self.lobby_panel:
+            destroy(self.lobby_panel)
+            self.lobby_panel = None
+        self.start_menu()
 
 
 def input_handle(key, ui_manager: UIManager):
