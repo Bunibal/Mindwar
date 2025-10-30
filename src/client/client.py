@@ -1,8 +1,9 @@
+import json
 from panda3d.core import loadPrcFileData, WindowProperties
 from ursina import *
 from ursina.networking import *
 
-from client.messages_from_server.message_types import MessageType
+from common.messages_from_server.message_types import MessageType
 from src.client.ui.ui_manager import UIManager
 
 # --- Panda3D Config ---
@@ -20,10 +21,6 @@ loadPrcFileData('', 'window-type none')  # prevent premature window creation
 peer = RPCPeer()
 UI_MANAGER = UIManager(peer)
 
-@rpc(peer)
-def send_gamestate(connection, time_received, state: str):
-    print(f"Received gamestate from server: {state}")
-    # Update local gamestate accordingly
 
 @rpc(peer)
 def on_connect(connection, time_received):
@@ -32,14 +29,10 @@ def on_connect(connection, time_received):
     # Handle post-connection setup
 
 @rpc(peer)
-def send_message(connection, time_received, player_id: int, message: str):
-    print(f"Message from player {player_id}: {message}")
-    # Display message in chat UI
-
-@rpc(peer)
 def send_data(connection, time_received, message_type:str, msg: str):
     f = getattr(MessageType, message_type, None)
     if f:
+        msg = json.loads(msg)
         f(msg, UI_MANAGER)
     else:
         raise ValueError(f"No function registered for message type: {message_type}")
@@ -54,25 +47,7 @@ def send_player(connection, time_received, player_info: str):
 #     execute(connection, time_received, msg_type, data, UI_MANAGER)
 #     print(f"Received data from server: {data}")
     # Process received data
-@rpc(peer)
-def do_action(connection, time_received, action: str, params: dict):
-    print(f"Action from server: {action} with params {params}")
-    # Execute action locally
 
-
-
-@rpc(peer)
-def send_lobby_list(connection, time_received, lobbies: list[str]):
-    """Send the list of lobbies from server to client. (Meaning the client will be receiving)"""
-    print(f"Received lobby list from server: {lobbies}")
-    UI_MANAGER.lobby_list_received(lobbies)
-    # Update local lobby list UI
-
-@rpc(peer)
-def send_lobby_info(connection, time_received, lobby_info: str):
-    print(f"Received lobby info from server: {lobby_info}")
-    UI_MANAGER.lobby_info_received(lobby_info)
-    # Update local lobby info UI
 
 def main():
     global input, update
