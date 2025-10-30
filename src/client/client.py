@@ -2,6 +2,7 @@ from panda3d.core import loadPrcFileData, WindowProperties
 from ursina import *
 from ursina.networking import *
 
+from client.messages_from_server.message_types import MessageType
 from src.client.ui.ui_manager import UIManager
 
 # --- Panda3D Config ---
@@ -25,13 +26,23 @@ def send_gamestate(connection, time_received, state: str):
     # Update local gamestate accordingly
 
 @rpc(peer)
+def on_connect(connection, time_received):
+    print(f"Connected to server at {connection.address}, time: {time_received}")
+    UI_MANAGER.on_connected()
+    # Handle post-connection setup
+
+@rpc(peer)
 def send_message(connection, time_received, player_id: int, message: str):
     print(f"Message from player {player_id}: {message}")
     # Display message in chat UI
 
 @rpc(peer)
-def message(connection, time_received, msg: str):
-    print(f"Received: {msg}")
+def send_data(connection, time_received, message_type:str, msg: str):
+    f = getattr(MessageType, message_type, None)
+    if f:
+        f(msg, UI_MANAGER)
+    else:
+        raise ValueError(f"No function registered for message type: {message_type}")
     # Display message in chat UI
 
 @rpc(peer)
@@ -47,6 +58,8 @@ def send_player(connection, time_received, player_info: str):
 def do_action(connection, time_received, action: str, params: dict):
     print(f"Action from server: {action} with params {params}")
     # Execute action locally
+
+
 
 @rpc(peer)
 def send_lobby_list(connection, time_received, lobbies: list[str]):
@@ -65,7 +78,6 @@ def main():
     global input, update
     app = Ursina(borderless=False)
 
-    peer.start("192.168.1.179", 8080, is_host=False)
     window.exit_button.visible = False
 
     props = WindowProperties()

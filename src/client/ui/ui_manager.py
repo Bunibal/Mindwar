@@ -31,7 +31,8 @@ class UIManager:
         self.server_ip = "192.168.1.179"
         self.server_port = 8080
         self.is_connected = False
-
+        
+        self.waiting_to_connect = False
     def start_menu(self):
         window.title = "Mindwar - Main Menu"
         self.menu_panel = Entity(
@@ -751,13 +752,13 @@ class UIManager:
         )
 
         # Connect button
-        Button(
+        self.connect_to_server_button = Button(
             text="Connect",
             parent=self.lobby_panel,
             y=-0.25,
             scale=(0.3, 0.08),
             color=color.lime,
-            on_click=self.connect_to_server
+            on_click=self.connect_to_server_or_cancel
         )
 
         # Back button
@@ -770,29 +771,38 @@ class UIManager:
             on_click=self.return_from_lobby
         )
 
-    def connect_to_server(self):
+    def connect_to_server_or_cancel(self):
         """Attempt to connect to the server"""
-        self.server_ip = self.server_ip_input.text.strip()
-        try:
-            self.server_port = int(self.server_port_input.text.strip())
-        except ValueError:
-            self.connection_status_text.text = "Invalid port number"
-            self.connection_status_text.color = color.red
-            return
+        if not self.waiting_to_connect:
+            self.server_ip = self.server_ip_input.text.strip()
+            try:
+                self.server_port = int(self.server_port_input.text.strip())
+            except ValueError:
+                self.connection_status_text.text = "Invalid port number"
+                self.connection_status_text.color = color.red
+                return
 
-        self.rcp_peer.start(self.server_ip, self.server_port, is_host=False)
-        if self.rcp_peer.is_running():
-            self.is_connected = True
+            self.rcp_peer.start(self.server_ip, self.server_port, is_host=False)
+            self.connection_status_text.text = "Connecting..."
+            self.connection_status_text.color = color.yellow
+            self.waiting_to_connect = True
+            self.connect_to_server_button.text = "Cancel"
+        else:
+            self.rcp_peer.stop()
+            self.connection_status_text.text = "Connection cancelled"
+            self.connection_status_text.color = color.red
+            self.waiting_to_connect = False
+            self.connect_to_server_button.text = "Connect"
+
+
+    def on_connected(self):
+        if self.waiting_to_connect:
+            self.waiting_to_connect = False
             self.connection_status_text.text = f"Connected to {self.server_ip}:{self.server_port}"
             self.connection_status_text.color = color.lime
             print(f"Connected to server at {self.server_ip}:{self.server_port}")
-
-            # Wait a moment for connection to establish, then show lobby browser
+            # Show lobby browser
             invoke(self.show_lobby_browser, delay=0.5)
-        else:
-            self.connection_status_text.text = f"Connection failed."
-            self.connection_status_text.color = color.red
-            print(f"Failed to connect to server at {self.server_ip}:{self.server_port}")
 
     def show_lobby_browser(self):
         """Show the lobby browser with list of available lobbies"""
@@ -1120,6 +1130,8 @@ class UIManager:
             color=color.red,
             on_click=self.leave_lobby
         )
+
+        self.rcp_peer.send_lobby_info(self.get_server(), self.current_lobby_id)
 
     def lobby_info_received(self, lobby_info: str):
         """Called when server sends lobby info"""
