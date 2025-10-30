@@ -11,20 +11,53 @@ class LobbyManager:
     def connect_player(self, connection):
         player = LobbyPlayer(connection)
         self.players[player.player_id] = player
-        return player.player_id
+        return player
+
+    def _get_player_from_connection(self, connection):
+        try:
+            return next(p for pid, p in self.players.items() if p.connection == connection)
+        except StopIteration:
+            logger.warning("No player found with the given connection")
+            raise ValueError("No player found with the given connection")
+
+    def _get_lobby_from_player(self, player_or_id):
+        """Get the lobby_id for a player if they are in a lobby.
+
+        Args:
+            player_or_id: Either a LobbyPlayer object or a player_id string
+
+        Returns:
+            lobby_id if player is in a lobby, None otherwise
+        """
+        # Handle both player object and player_id
+        if isinstance(player_or_id, LobbyPlayer):
+            player_id = player_or_id.player_id
+        else:
+            player_id = player_or_id
+
+        # Search through all lobbies for this player
+        for lobby_id, lobby in self.lobbies.items():
+            if any(p.player_id == player_id for p in lobby.players):
+                return lobby
+
+        return None
 
     def disconnect_player(self, connection):
-        player_id = next((pid for pid, p in self.players.items() if p.connection == connection), None)
-        if player_id in self.players:
-            player = self.players[player_id]
-            if player.current_lobby:
-                self.leave_lobby(player.current_lobby, player_id)
-            del self.players[player_id]
-        else:
-            logger.warning(f"Player with id '{player_id}' does not exist.")
-            raise ValueError(f"Player with id '{player_id}' does not exist.")
+        player = self._get_player_from_connection(connection)
+        # if player.current_lobby:
+        self.leave_lobby(player)
+        del self.players[player.id]
+        # else:
+        # logger.warning(f"Player with id '{player.id}' does not exist.")
+        # raise ValueError(f"Player with id '{player.id}' does not exist.")
 
-    def create_lobby(self, lobby_name, max_players):
+    def set_player_name(self, connection, player_name):
+        player = self._get_player_from_connection(connection)
+        player.name = player_name
+
+    def create_lobby(self, connection, lobby_name, max_players):
+        player = self._get_player_from_connection(connection)
+        logger.info("Player %s created lobby %s with player count %d", player.name, lobby_name, max_players)
         if any(lobby.lobby_name == lobby_name for lobby in self.lobbies.values()):
             logger.warning(f"Lobby with name '{lobby_name}' already exists.")
             raise ValueError(f"Lobby with name '{lobby_name}' already exists.")
@@ -37,6 +70,7 @@ class LobbyManager:
             lobby = self.lobbies[lobby_id]
             if len(lobby.players) < lobby.max_players:
                 lobby.players.append(self.players[player_id])
+                return lobby
             else:
                 logger.info(f"Lobby '{lobby.lobby_name}' is full.")
                 raise ValueError(f"Lobby '{lobby.lobby_name}' is full.")
@@ -44,17 +78,9 @@ class LobbyManager:
             logger.warning(f"Lobby with id '{lobby_id}' does not exist.")
             raise ValueError(f"Lobby with id '{lobby_id}' does not exist.")
 
-    def leave_lobby(self, lobby_id, player_id):
-        if lobby_id in self.lobbies:
-            lobby = self.lobbies[lobby_id]
-            if player_id in lobby.players:
-                lobby.players.remove(self.players[player_id])
-            else:
-                logger.info(f"Player {player_id} is not in lobby.")
-                raise ValueError(f"Player {player_id} is not in lobby.")
-        else:
-            logger.warning(f"Lobby with id '{lobby_id}' does not exist.")
-            raise ValueError(f"Lobby with id '{lobby_id}' does not exist.")
+    def leave_lobby(self, player_id):
+        lobby = self._get_lobby_from_player(player_id)
+        lobby.players.remove(self.players[player_id])
 
     def get_lobby_info(self, lobby_id, player_id):
         if lobby_id in self.lobbies:
