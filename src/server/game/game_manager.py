@@ -14,6 +14,7 @@ class GameManager:
     def start_new_game(self, chosen_factions):
         new_game = Game(chosen_factions)
         self.games[new_game.uuid] = new_game
+        new_game.start_game()
         return
 
         for player in chosen_factions:
@@ -40,10 +41,3 @@ class GameManager:
     def end_turn(self, game_id):
         self.games[game_id].end_turn()
 
-    def destroy_map(self):
-        for tile in self.gamestate.game_map:
-            destroy(tile)
-        del self.map_manager
-        self.map_manager = None
-        self.gamestate.game_map = []
-        scene.clear()

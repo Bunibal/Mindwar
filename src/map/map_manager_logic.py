@@ -16,7 +16,7 @@ HEX_DIRECTIONS_EVEN = [(0, 1), (-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0)]
 HEX_DIRECTIONS_ODD = [(0, 1), (-1, 1), (-1, 0), (0, -1), (1, 0), (1, 1)]
 
 
-class MapManager:
+class MapManagerLogic:
     def __init__(self, rows=8, cols=6, n_action_fields=None, n_streets=None, terrain_weights=None):
         self.terrain_weights = terrain_weights
         if terrain_weights is not None:
