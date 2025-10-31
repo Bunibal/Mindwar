@@ -2,8 +2,8 @@ from enum import Enum
 
 from ursina import Entity, color
 
-from src import settings
-from src.utils import world_calculations
+import settings
+from utils import world_calculations
 
 
 class BuildingType(Enum):

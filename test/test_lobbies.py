@@ -1,4 +1,4 @@
-from src.client.ui.ui_manager import UIManager
+from client.ui.ui_manager import UIManager
 from ursina.networking import RPCPeer
 
 

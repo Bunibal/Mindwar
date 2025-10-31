@@ -3,7 +3,7 @@ import random
 import uuid
 from enum import Enum
 
-from src.entities.factions.base_faction import FactionType
+from entities.factions.base_faction import FactionType
 
 
 class LobbyStatus(Enum):

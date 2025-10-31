@@ -1,10 +1,10 @@
 from ursina.networking import *
 
-from src.common.util.util import register_functions
-from src.server.game import Game
-from src.server.rpc_functions.communication import COMMUNICATION_FUNCTIONS_TO_REGISTER
-from src.server.rpc_functions.gameactions import GAMEACTIONS_FUNCTIONS_TO_REGISTER
-from src.server.rpc_functions.lobby_rpc import LOBBY_FUNCTIONS_TO_REGISTER
+from common.util.util import register_functions
+from server.game import Game
+from server.rpc_functions.communication import COMMUNICATION_FUNCTIONS_TO_REGISTER
+from server.rpc_functions.gameactions import GAMEACTIONS_FUNCTIONS_TO_REGISTER
+from server.rpc_functions.lobby_rpc import LOBBY_FUNCTIONS_TO_REGISTER
 
 peer = RPCPeer()
 

@@ -1,8 +1,8 @@
 from ursina import *
 
-from src import settings
-from src.entities.tiles.feature_type import FeatureType
-from src.entities.tiles.terrain_type import TerrainType
+import settings
+from entities.tiles.feature_type import FeatureType
+from entities.tiles.terrain_type import TerrainType
 
 
 class BaseTileUI(Button):

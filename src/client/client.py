@@ -3,8 +3,8 @@ from panda3d.core import loadPrcFileData, WindowProperties
 from ursina import *
 from ursina.networking import *
 
-from src.common.messages_from_server.message_types import MessageType
-from src.client.ui.ui_manager import UIManager
+from common.messages_from_server.message_types import MessageType
+from client.ui.ui_manager import UIManager
 
 # --- Panda3D Config ---
 loadPrcFileData('', 'window-title Mindwar')
@@ -78,13 +78,8 @@ def main():
 
     def input(key):
         if key == 's':
+            return
             peer.message(peer.get_connections()[0], "Hello, World!")
-        if key == 'l':
-            peer.create_lobby(peer.get_connections()[0], "Test Lobby", 4)
-        if key == "r":
-            peer.get_lobby_list(peer.get_connections()[0])
-        #input_handle(key, ui_manager)
-
     def update():
         peer.update()
 

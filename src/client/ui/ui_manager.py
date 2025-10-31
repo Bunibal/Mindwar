@@ -1,15 +1,15 @@
 from ursina import *
 import ast
 
-from src.entities.factions.base_faction import BaseFaction
-from src.entities.factions.base_faction import FactionType
-from src.entities.tiles.terrain_type import TerrainType
-from src.entities.units.base_unit import BaseUnitUI, UnitType
-from src.map.map_manager import MapManager
+from entities.factions.base_faction import BaseFaction
+from entities.factions.base_faction import FactionType
+from entities.tiles.terrain_type import TerrainType
+from entities.units.base_unit import BaseUnitUI, UnitType
+from map.map_manager import MapManager
 
 
 class UIManager:
-    def __init__(self, rcp_peer):
+    def __init__(self, rpc_peer):
         self.is_prepare_random_map = None
         self.map_load_filepath = None
         self.slots = None
@@ -17,7 +17,7 @@ class UIManager:
         self.action_field_input = None
         self.edge_input = None
         self.row_input = None
-        self.rcp_peer = rcp_peer
+        self.rpc_peer = rpc_peer
         self.menu_panel = None
         self.editor_toolbar = None
         self.popup = None
@@ -139,7 +139,7 @@ class UIManager:
         }[label]
 
     def get_server(self, raise_error=True):
-        conns = self.rcp_peer.get_connections()
+        conns = self.rpc_peer.get_connections()
         if conns:
             return conns[0]
         if raise_error:
@@ -148,7 +148,7 @@ class UIManager:
     
     def start_game_locally(self):
         print(type(self.get_server()))
-        self.rcp_peer.start_game(self.get_server())
+        self.rpc_peer.start_game(self.get_server())
 
     def quit_game(self):
         application.quit()
@@ -708,7 +708,7 @@ class UIManager:
             text="Name:",
             parent=self.lobby_panel,
             x = -.25,
-            y=0.,
+            y=0.35,
             scale=1,
             origin=(-0.5, 0),
             color=color.light_gray
@@ -727,7 +727,7 @@ class UIManager:
             text="Server IP:",
             parent=self.lobby_panel,
             x=-0.25,
-            y=0.35,
+            y=0.2,
             origin=(-0.5, 0),
             scale=1,
             color=color.light_gray
@@ -799,13 +799,13 @@ class UIManager:
                 self.connection_status_text.color = color.red
                 return
 
-            self.rcp_peer.start(self.server_ip, self.server_port, is_host=False)
+            self.rpc_peer.start(self.server_ip, self.server_port, is_host=False)
             self.connection_status_text.text = "Connecting..."
             self.connection_status_text.color = color.yellow
             self.waiting_to_connect = True
             self.connect_to_server_button.text = "Cancel"
         else:
-            self.rcp_peer.stop()
+            self.rpc_peer.stop()
             self.connection_status_text.text = "Connection cancelled"
             self.connection_status_text.color = color.red
             self.waiting_to_connect = False
@@ -817,6 +817,7 @@ class UIManager:
             self.waiting_to_connect = False
             self.connection_status_text.text = f"Connected to {self.server_ip}:{self.server_port}"
             self.connection_status_text.color = color.lime
+            self.rpc_peer.set_player_name(self.get_server(), self.name_input.text.strip())
             print(f"Connected to server at {self.server_ip}:{self.server_port}")
             # Show lobby browser
             invoke(self.show_lobby_browser, delay=0.5)
@@ -906,7 +907,7 @@ class UIManager:
         try:
             server = self.get_server(raise_error=False)
             if server:
-                self.rcp_peer.get_lobby_list(server)
+                self.rpc_peer.get_lobby_list(server)
                 print("Requesting lobby list from server...")
             else:
                 print("No server connection available")
@@ -1059,7 +1060,7 @@ class UIManager:
 
         try:
             server = self.get_server()
-            self.rcp_peer.create_lobby(server, lobby_name, max_players)
+            self.rpc_peer.create_lobby(server, lobby_name, max_players)
             print(f"Creating lobby: {lobby_name} with {max_players} max players")
             self.close_popup()
             # Refresh the lobby list after a short delay
@@ -1072,7 +1073,7 @@ class UIManager:
         try:
             server = self.get_server()
             self.current_lobby_id = lobby_id
-            self.rcp_peer.join_lobby(server, lobby_id)
+            self.rpc_peer.join_lobby(server, lobby_id)
             print(f"Joining lobby {lobby_id}")
             # Show lobby detail screen
             self.show_lobby_detail()
@@ -1145,7 +1146,7 @@ class UIManager:
             on_click=self.leave_lobby
         )
 
-        self.rcp_peer.send_lobby_info(self.get_server(), self.current_lobby_id)
+        self.rpc_peer.send_lobby_info(self.get_server(), self.current_lobby_id)
 
     def lobby_info_received(self, lobby_info: str):
         """Called when server sends lobby info"""
@@ -1157,7 +1158,7 @@ class UIManager:
         """Set player status to ready"""
         try:
             server = self.get_server()
-            self.rcp_peer.set_ready_status(server, True)
+            self.rpc_peer.set_ready_status(server, True)
             print("Set ready status: True")
         except Exception as e:
             print(f"Error setting ready status: {e}")
@@ -1166,7 +1167,7 @@ class UIManager:
         """Set player status to not ready"""
         try:
             server = self.get_server()
-            self.rcp_peer.set_ready_status(server, False)
+            self.rpc_peer.set_ready_status(server, False)
             print("Set ready status: False")
         except Exception as e:
             print(f"Error setting ready status: {e}")
@@ -1175,7 +1176,7 @@ class UIManager:
         """Leave current lobby"""
         try:
             server = self.get_server()
-            self.rcp_peer.leave_lobby(server)
+            self.rpc_peer.leave_lobby(server)
             self.current_lobby_id = None
             print("Left lobby")
             # Return to lobby browser

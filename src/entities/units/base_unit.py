@@ -2,8 +2,8 @@ from enum import Enum, auto
 
 from ursina import *
 
-from src import settings
-from src.utils import world_calculations
+import settings
+from utils import world_calculations
 
 
 class UnitType(Enum):

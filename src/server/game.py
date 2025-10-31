@@ -1,7 +1,7 @@
-from src.entities.factions.base_faction import FactionType
-from src.entities.units.base_unit_logic import UnitType, BaseUnitLogic
-from src.server.gamestate import GameState
-from src.map import map_manager_logic
+from entities.factions.base_faction import FactionType
+from entities.units.base_unit_logic import UnitType, BaseUnitLogic
+from server.gamestate import GameState
+from map import map_manager_logic
 
 
 class Game:

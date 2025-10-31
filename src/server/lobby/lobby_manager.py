@@ -1,6 +1,5 @@
-from src.server.lobby.lobby import Lobby, LobbyPlayer
-
-from src.utils.logger import logger
+from server.lobby.lobby import Lobby, LobbyPlayer
+from utils.logger import logger
 
 
 class LobbyManager:

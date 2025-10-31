@@ -1,8 +1,8 @@
 from enum import Enum, auto
 
-from src.entities.factions.base_faction import FactionType
-from src import settings
-from src.utils import world_calculations
+from entities.factions.base_faction import FactionType
+import settings
+from utils import world_calculations
 
 
 class UnitType(Enum):

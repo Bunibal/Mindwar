@@ -6,11 +6,11 @@ import random
 import networkx as nx
 from matplotlib import pyplot as plt
 
-from src import settings
-from src.entities.tiles.tile_logic_only import BaseTileLogic
-from src.entities.tiles.feature_type import ACTION_FIELDS
-from src.entities.tiles.feature_type import FLAT_TERRAINS
-from src.entities.tiles.terrain_type import TerrainType
+import settings
+from entities.tiles.tile_logic_only import BaseTileLogic
+from entities.tiles.feature_type import ACTION_FIELDS
+from entities.tiles.feature_type import FLAT_TERRAINS
+from entities.tiles.terrain_type import TerrainType
 
 HEX_DIRECTIONS_EVEN = [(0, 1), (-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0)]
 HEX_DIRECTIONS_ODD = [(0, 1), (-1, 1), (-1, 0), (0, -1), (1, 0), (1, 1)]

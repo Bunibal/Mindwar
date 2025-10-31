@@ -3,12 +3,12 @@ import json
 
 import ursina.networking
 
-from src.common.messages_from_server.message_types import MessageType
-from src.server.lobby import lobby
+from common.messages_from_server.message_types import MessageType
+from server.lobby import lobby
 
 LOBBY_FUNCTIONS_TO_REGISTER = []
 
-from src.server.handler import LOBBY_MANAGER
+from server.handler import LOBBY_MANAGER
 
 
 def rpcreg(f):
