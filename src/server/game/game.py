@@ -1,3 +1,4 @@
+import uuid
 from entities.factions.base_faction import FactionType
 from entities.units.base_unit_logic import UnitType, BaseUnitLogic
 from server.gamestate import GameState
@@ -5,10 +6,12 @@ from map import map_manager_logic
 
 
 class Game:
-    def __init__(self):
+    def __init__(self, factions:dict):
         self.current_player = None
-        self.chosen_factions = None
+        self.chosen_factions = factions
+        self.players  = list(factions.keys()) # Player IDs
         self.map_manager = None
+        self.uuid = uuid.uuid4()
 
 
     def start_game(self):

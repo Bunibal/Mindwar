@@ -28,7 +28,7 @@ class UIManager:
         self.current_lobbies = []
         self.current_lobby_id = None
         self.player_id = None
-        self.server_ip = "192.168.1.179"
+        self.server_ip = "localhost"
         self.server_port = 8080
         self.is_connected = False
         
@@ -409,105 +409,8 @@ class UIManager:
             destroy(child)
 
     def setup_game_ui(self):
-        self.clear_ui()
-
-        # Add proper lighting for the faction selection screen
-        DirectionalLight().look_at(Vec3(1, -1, -1))
-        AmbientLight(color=color.rgba(120, 120, 120, 0.5))  # Add ambient light for better visibility
-
-        self.slots = []
-        self.factions = [BaseFaction(name=faction.name, faction_type=faction) for faction in FactionType]
-
-        title = Text("Choose Your Factions", parent=camera.ui, y=0.45, scale=2, origin=(0, 0), color=color.white)
-        start_index = [0, -1, -1, -1]
-
-        # Faction slots (up to 4)
-        for i in range(4):
-            x_pos = -0.5 + i * 0.33
-            slot = Entity(parent=camera.ui, position=(x_pos, 0), scale=(0.4, 0.6), model='quad',
-                          color=color.gray.tint(0.2), z=0.1)
-
-            slot.current_faction_index = start_index[i]
-
-            # Faction name label
-            slot.faction_label = Text(
-                text=self.factions[slot.current_faction_index].name,
-                parent=slot,
-                y=0.35,
-                scale=1.5,
-                origin=(0, 0),
-                color=color.black,
-                z=-0.1
-            )
-
-            # Arrow buttons
-            left = Button(text='Back', parent=slot, position=(-0.18, -0.35, -0.1), scale=(0.3, 0.1), color=color.azure)
-            right = Button(text='Forward', parent=slot, position=(0.18, -0.35, -0.1), scale=(0.3, 0.1),
-                           color=color.azure)
-
-            # Model display - Remove color override here too
-            slot.model_display = BaseUnitUI(
-                position=(0, -0.1, 0.3),
-                faction=FactionType.HUMAN.name,
-                unit_type=UnitType.INFANTRY,
-                parent=scene,
-                owner=self.factions[slot.current_faction_index],
-                scale=(0.3, 0.3, 0.3),
-                rotation_y=180,
-                z=-1
-                # REMOVED any color parameter to preserve model colors
-            )
-
-            def update_model(s=slot):
-                faction = self.factions[s.current_faction_index]
-                s.faction_label.text = faction.name
-                s.model_display.owner = faction.name
-                s.model_display.model = BaseUnitUI.get_model_for_unit(slot.model_display.type, faction.name)
-                # Don't set color here either - let the model keep its original colors
-
-            left.on_click = Func(self.prev_faction, slot, update_model)
-            right.on_click = Func(self.next_faction, slot, update_model)
-
-            self.slots.append(slot)
-
-        # Control Buttons
-        button_y = -0.45
-
-        start_game_btn = Button(
-            text='Start Game',
-            position=(0.5, button_y),
-            scale=(0.25, 0.1),
-            parent=camera.ui,
-            color=color.lime,
-            on_click=self.ui_start_game_locally
-        )
-
-        back_btn = Button(
-            text='Back to Main Menu',
-            position=(-0.5, button_y),
-            scale=(0.25, 0.1),
-            parent=camera.ui,
-            color=color.red,
-            on_click=self.return_to_menu
-        )
-
-        load_map_btn = Button(
-            text='Load Map',
-            position=(0, button_y + 0.08),
-            scale=(0.2, 0.08),
-            parent=camera.ui,
-            color=color.orange,
-            on_click=self.open_load_popup
-        )
-
-        generate_map_btn = Button(
-            text='Generate Random Map',
-            position=(0, button_y),
-            scale=(0.3, 0.08),
-            parent=camera.ui,
-            color=color.cyan,
-            on_click=self.open_generate_random_map_popup
-        )
+        """Obsolete, I think"""
+        pass
 
     def prev_faction(self, slot, update_func):
         slot.current_faction_index = (slot.current_faction_index - 1) % len(self.factions)
@@ -521,19 +424,8 @@ class UIManager:
         self.close_popup()
         self.map_load_filepath = filepath
 
-    def ui_start_game_locally(self):
+    def ui_start_game(self):
         # get factions chosen
-        self.game_manager.chosen_factions = []
-        for slot in self.slots:
-            if slot.current_faction_index != -1:
-                self.game_manager.chosen_factions.append(self.factions[slot.current_faction_index])
-        self.game_manager.n_players = len(self.game_manager.chosen_factions)
-        if not self.game_manager.n_players:
-            print("⚠️ No factions selected.")
-            return
-        self.game_manager.gamestate.game_state = "game"
-        self.game_manager.gamestate.chosen_factions = self.game_manager.chosen_factions
-        self.game_manager.gamestate.n_players = self.game_manager.n_players
         if self.is_prepare_random_map:
             self.game_manager.generate_random_map(
                 rows=int(self.row_input.text),
@@ -1108,7 +1000,7 @@ class UIManager:
         # Player list container
         self.lobby_player_list = Entity(parent=self.lobby_panel, y=0.1)
 
-        Text(
+        self._lobby_info_text = Text(
             text="Waiting for lobby info...",
             parent=self.lobby_player_list,
             y=0,
@@ -1146,11 +1038,26 @@ class UIManager:
             on_click=self.leave_lobby
         )
 
+        Button(
+            text = "Start Game",
+            parent=self.lobby_panel,
+            y=-0.38,
+            x=0.6,
+            scale=(0.25, 0.08),
+            color=color.cyan,
+            on_click=self.press_start_game
+        )
+
         self.rpc_peer.send_lobby_info(self.get_server(), self.current_lobby_id)
 
-    def lobby_info_received(self, lobby_info: str):
+    def lobby_info_received(self, lobby_info: dict):
         """Called when server sends lobby info"""
         print(f"Received lobby info: {lobby_info}")
+        text = "Lobby Info:\n"
+        for key, value in lobby_info.items():
+            text += f"{key}: {value}\n"
+        if hasattr(self, '_lobby_info_text'):
+            self._lobby_info_text.text = text
         # TODO: Parse and display lobby info
         # Update lobby_title_text and lobby_player_list
 
@@ -1183,17 +1090,15 @@ class UIManager:
             self.show_lobby_browser()
         except Exception as e:
             print(f"Error leaving lobby: {e}")
+            self.disconnect_from_server()
 
     def disconnect_from_server(self):
         """Disconnect from server and return to connection screen"""
-        try:
-            # TODO: Properly close connection
-            self.is_connected = False
-            self.current_lobby_id = None
-            print("Disconnected from server")
-            self.show_connection_screen()
-        except Exception as e:
-            print(f"Error disconnecting: {e}")
+        self.rpc_peer.stop()
+        self.is_connected = False
+        self.current_lobby_id = None
+        print("Disconnected from server")
+        self.show_connection_screen()
 
     def return_from_lobby(self):
         """Return to main menu from lobby system"""
@@ -1202,8 +1107,19 @@ class UIManager:
             self.lobby_panel = None
         self.start_menu()
 
+    def press_start_game(self):
+        """Request server to start the game"""
+        server = self.get_server()
+        self.rpc_peer.press_start_button(server)
+        print("Requested to start game")
+
+    def game_started(self, game_state: dict):
+        """Called when server notifies that the game has started"""
+        print("Game has started!")
+        self.ui_start_game()
+        # Additional setup if needed
+
+
 
 def input_handle(key, ui_manager: UIManager):
-    if key == 'escape':
-        if ui_manager.game_manager.gamestate.game_state == "game":
-            ui_manager.game_exit_popup()
+    pass

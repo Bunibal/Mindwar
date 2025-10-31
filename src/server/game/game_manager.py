@@ -1,28 +1,22 @@
 from ursina import *
 from ursina import Vec3
 
-from server.game import Game
+from server.game.game import Game
 from entities.units.base_unit import UnitType, BaseUnitUI
 from server.gamestate import GameState
 from map import map_manager
-from client.ui.ui_manager import UIManager
 
 
 class GameManager:
     def __init__(self):
-        self.game = Game()
-        self.ui_manager = UIManager(self)
-        self.ui_manager.start_menu()
+        self.games = {}
 
-    def setup_game_locally(self):
-        self.game.setup_game()
-        self.ui_manager.setup_game_ui()
+    def start_new_game(self, chosen_factions):
+        new_game = Game(chosen_factions)
+        self.games[new_game.uuid] = new_game
+        return
 
-    def start_game_locally(self):
-        self.game.start_game()
-        self.ui_manager.game_ui()
-
-        for player in self.chosen_factions:
+        for player in chosen_factions:
             start_config = player.units_start_config
             for config in start_config:
                 if config["all_fields"] is True:
@@ -43,8 +37,8 @@ class GameManager:
                                                 parent=player)
                                 player.units.append(unit)
 
-    def end_turn(self):
-        self.game.end_turn()
+    def end_turn(self, game_id):
+        self.games[game_id].end_turn()
 
     def destroy_map(self):
         for tile in self.gamestate.game_map:

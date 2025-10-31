@@ -1,7 +1,7 @@
 from panda3d.core import loadPrcFileData, WindowProperties
 from ursina import *
 
-from game_manager import GameManager
+from server.game.game_manager import GameManager
 from client.ui.ui_manager import input_handle
 
 # --- Panda3D Config ---

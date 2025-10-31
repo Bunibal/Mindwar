@@ -29,7 +29,7 @@ def on_connect(connection, time_received):
     # Handle post-connection setup
 
 @rpc(peer)
-def send_data(connection, time_received, message_type:str, msg: str):
+def send_data(connection, time_received, message_type:str, msg:str):
     f = getattr(MessageType, message_type, None).value[0] #[0] since we have a singleton tuple
     if f:
         msg = json.loads(msg)
@@ -41,12 +41,6 @@ def send_data(connection, time_received, message_type:str, msg: str):
 @rpc(peer)
 def send_player(connection, time_received, player_info: str):
     print(f"Received player info from server: {player_info}")
-    # Update local player info
-# @rpc(peer)
-# def send_anything(connection, time_received, msg_type:str, data: str):
-#     execute(connection, time_received, msg_type, data, UI_MANAGER)
-#     print(f"Received data from server: {data}")
-    # Process received data
 
 
 def main():

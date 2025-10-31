@@ -1,4 +1,4 @@
-from server.lobby.lobby import Lobby, LobbyPlayer
+from server.lobby.lobby import Lobby, LobbyPlayer, LobbyStatus
 from utils.logger import logger
 
 
@@ -44,8 +44,8 @@ class LobbyManager:
     def disconnect_player(self, connection):
         player = self._get_player_from_connection(connection)
         # if player.current_lobby:
-        self.leave_lobby(player)
-        del self.players[player.id]
+        self.leave_lobby(player.player_id)
+        del self.players[player.player_id]
         # else:
         # logger.warning(f"Player with id '{player.id}' does not exist.")
         # raise ValueError(f"Player with id '{player.id}' does not exist.")
@@ -80,17 +80,15 @@ class LobbyManager:
 
     def leave_lobby(self, player_id):
         lobby = self._get_lobby_from_player(player_id)
+        print("DEBUG: lobby players:", lobby.players)
+        print("DEBUG: player id to remove:", player_id)
         lobby.players.remove(self.players[player_id])
 
     def get_lobby_info(self, connection, lobby_id):
         player = self._get_player_from_connection(connection)
         if lobby_id in self.lobbies:
-            if player.player_id in self.lobbies[lobby_id].lobby_host:
-                logger.debug(f"Player {player.player_id} started lobby with lobby id {lobby_id}.")
-                return self.lobbies[lobby_id]
-            else:
-                logger.warning(f"Player {player.player_id} is not the host of lobby {lobby_id}.")
-                raise ValueError("Only the lobby host can get lobby info.")
+            logger.debug(f"Player {player.player_id} requested info for lobby id {lobby_id}.")
+            return self.lobbies[lobby_id]
         else:
             logger.warning(f"Lobby with id '{lobby_id}' does not exist.")
             raise ValueError(f"Lobby with id '{lobby_id}' does not exist.")
@@ -143,3 +141,19 @@ class LobbyManager:
         else:
             logger.warning(f"Player with id '{player_id}' does not exist.")
             raise ValueError(f"Player with id '{player_id}' does not exist.")
+        
+    def press_start_button(self, connection, game_manager):
+        player = self._get_player_from_connection(connection)
+        lobby = self._get_lobby_from_player(player)
+        if lobby is not None:
+            if lobby.lobby_status != LobbyStatus.IN_GAME:
+                game_manager.start_new_game({p.player_id: p.faction for p in lobby.players})
+                lobby.lobby_status = LobbyStatus.IN_GAME
+                logger.info(f"Game started for lobby {lobby.lobby_name} by host {player.player_id}.")
+                return True
+        else:
+            logger.warning(f"Player {player.player_id} is not in a lobby.")
+            raise ValueError("Player is not in a lobby.")
+        return False
+        
+
