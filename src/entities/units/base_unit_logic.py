@@ -20,10 +20,7 @@ class BaseUnitLogic:
         self.type = unit_type
         self.faction = faction.lower()
         self.moves_left = 2
-        print(f"Unit created: {self.model}")
-        print(f"Texture: {self.texture}")
-        print(f"Color: {self.color}")
-        print(f"Unlit: {self.unlit}")
+        print(f"Unit created: {self}")
         self.on_the_map = True
 
     def update(self, payload):

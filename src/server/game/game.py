@@ -7,11 +7,13 @@ from map.map_manager_logic import MapManagerLogic
 
 class Game:
     def __init__(self, factions:dict):
+        """factions: dict[player_id: uuid, faction_type: FactionType]"""
         self.current_player = None
         self.players  = list(factions.keys()) # Player IDs
         self.factions = {pid:BaseFaction("TBD", ftype) for pid, ftype in factions.items()}
         self.uuid = uuid.uuid4()
         self.gamestate = GameState()
+        self.map_manager = None
 
 
     def start_game(self):
@@ -19,22 +21,23 @@ class Game:
         self.game_map = []
         self.prepare_game()
         self.current_player = 0
-        self.generate_random_map()
+        
 
     def prepare_game(self):
+        self.generate_random_map()
         self.load_start_units()
 
     def load_start_units(self):
-        for player, faction in self.factions.items():
-            start_config = player.units_start_config
+        for player_id, faction in self.factions.items():
+            start_config = faction.units_start_config
             for config in start_config:
                 if config["all_fields"] is True:
                     for unit_type in UnitType:
                         for i in range(config[unit_type.name]):
                             for action_field in self.map_manager.action_fields:
-                                unit = BaseUnitLogic(player.name, unit_type, grid_position=action_field.grid_position
+                                unit = BaseUnitLogic(player_id, unit_type, grid_position=action_field.grid_position
                                                 )  # parent=player
-                                player.units.append(unit)
+                                self.add_unit(player_id, unit)
                 else:
                     randomized_fields = self.map_manager.get_random_action_fields(config["n_selected_fields"])
                     for unit_type in UnitType:
@@ -45,6 +48,9 @@ class Game:
 
     def end_turn(self):
         self.current_player  = (self.current_player + 1) % len(self.players)
+
+    def add_unit(self, player_id, unit):
+        self.factions[player_id].units.append(unit)
 
     def generate_random_map(self, rows=10, cols=20, n_action_fields=10, n_streets=20, weights=None):
         if self.map_manager:

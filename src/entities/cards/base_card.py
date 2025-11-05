@@ -3,7 +3,7 @@ from enum import Enum, auto
 
 from ursina import Entity, color
 
-from src import settings
+import settings
 
 
 class CardType(Enum):
