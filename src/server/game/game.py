@@ -73,15 +73,32 @@ class Game:
         self.map_manager = None
         self.gamestate.game_map = []
 
+    @property
+    def units(self):
+        all_units = []
+        for faction in self.factions.values():
+            all_units.extend(faction.units)
+        return all_units
 
     def encode_game_state(self):
+        units_serialized = [self.serialize_unit(unit) for unit in self.units]
         state = {
-            "current_player": self.current_player.name if self.current_player else None,
-            "chosen_factions": [player.name for player in self.chosen_factions] if self.chosen_factions else [],
-            "map": [tile.to_string() for tile in self.game_map] if self.game_map else [],
+            "current_player": self.current_player,
+            "units": units_serialized,
+            "factions": {pid: faction.faction_type.name for pid, faction in self.factions.items()},
+            "map": self.map_manager.to_dict(),
             "game_state": self.game_state,
         }
         return state
+    
+    def serialize_unit(self, unit: BaseUnitLogic):
+        return {
+            "faction": unit.faction,
+            "type": unit.type.name,
+            "grid_position": unit.grid_position
+        }
+    
+
 
     def build_action(self):
         pass

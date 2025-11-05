@@ -6,11 +6,12 @@ from entities.tiles.terrain_type import TerrainType
 
 
 class BaseTileUI(Button):
-    def __init__(self, logic_object, **kwargs):
-        self.logic_object = logic_object
+    def __init__(self, properties:dict):
+        for key, value in properties.items():
+            setattr(self, key, value) ## Passed from JSON respresentation of the logic object
 
-        model = self.get_model_for_terrain(self.logic_object.terrain)
-        position = self.hex_to_world(*self.logic_object.grid_position)
+        model = self.get_model_for_terrain(properties["terrain"])
+        position = self.hex_to_world(*properties["grid_position"])
         
 
         super().__init__(
@@ -23,7 +24,6 @@ class BaseTileUI(Button):
             origin=(0, 0),
             highlight_color=color.azure,
             pressed_color=color.lime,
-            **kwargs
         )
 
     @staticmethod
@@ -38,27 +38,27 @@ class BaseTileUI(Button):
         return (x, y, 0)
 
     def on_click(self):
-        q, r = self.logic_object.grid_position
+        q, r = self.grid_position
         print(f"Clicked tile at row: {q}, col: {r}")
         print(f"Tile world position: {self.x}, {self.y}")
-        print(f"Tile terrain: {self.logic_object.terrain}")
-        print(f"Tile feature: {self.logic_object.feature}")
+        print(f"Tile terrain: {self.terrain}")
+        print(f"Tile feature: {self.feature}")
         if self.has_street:
-            print(f"Tile has street: {self.logic_object.street_entity}")
-            print(f"Street rotation: {self.logic_object.street_rotation}")
-            print(f"Street directions: {self.logic_object.street_dirs}")
-            print(f"even: {self.logic_object.grid_position[0] % 2 == 0}")
+            print(f"Tile has street: {self.street_entity}")
+            print(f"Street rotation: {self.street_rotation}")
+            print(f"Street directions: {self.street_dirs}")
+            print(f"even: {self.grid_position[0] % 2 == 0}")
 
     @staticmethod
     def get_model_for_terrain(terrain):
         return {
-            TerrainType.GRASSLAND: f'{settings.HEX_TILES_DIR}/hex_grass.glb',
+            TerrainType.GRASSLAND: f'{settings.HEX_TILES_DIR}\\hex_grass.glb',
             TerrainType.FOREST: f'{settings.HEX_TILES_DIR}/hex_forest.glb',
             TerrainType.WETLAND: f'{settings.HEX_TILES_DIR}/hex_wetland.glb',
             TerrainType.MOUNTAIN: f'{settings.HEX_TILES_DIR}/hex_mountain.glb',
             TerrainType.DESERT: f'{settings.HEX_TILES_DIR}/hex_desert.glb',
             TerrainType.WATER: f'{settings.HEX_TILES_DIR}/hex_water.glb',
-        }.get(terrain, f'{settings.HEX_TILES_DIR}/hex_grass.obj')
+        }.get(terrain, f'{settings.HEX_TILES_DIR}\\hex_grass.glb')
 
     @staticmethod
     def get_terrain_height(terrain):

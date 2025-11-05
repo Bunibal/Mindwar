@@ -15,7 +15,7 @@ HEX_DIRECTIONS_EVEN = [(0, 1), (-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0)]
 HEX_DIRECTIONS_ODD = [(0, 1), (-1, 1), (-1, 0), (0, -1), (1, 0), (1, 1)]
 
 
-class MapManager:
+class MapManagerUI:
     def __init__(self, rows=8, cols=6, n_action_fields=None, n_streets=None, terrain_weights=None):
         self.terrain_weights = terrain_weights
         if terrain_weights is not None:
@@ -29,68 +29,68 @@ class MapManager:
         self.cols = cols
         self.tiles = []
 
-    def generate_map(self):
-        for q in range(self.rows):
-            for r in range(self.cols):
-                terrain = self.random_terrain(weights=self.terrain_weights)
-                tile = BaseTileUI(grid_position=(q, r), terrain=terrain)
-                self.tiles.append(tile)
-                if (q, r) in [(1, 1), (self.rows - 2, self.cols - 2), (self.rows - 2, 1), (1, self.cols - 2)]:
-                    tile.mark_as_action_field()
-                    self.action_fields.append(tile)
-        self.build_hex_graph()
-        self.action_fields = self.choose_random_action_fields((self.rows, self.cols))
-        self.calculate_generate_street_network(n_edges=self.n_streets)
-        self.clean_map_terrains()
-        return self.tiles
+    # def generate_map(self):
+    #     for q in range(self.rows):
+    #         for r in range(self.cols):
+    #             terrain = self.random_terrain(weights=self.terrain_weights)
+    #             tile = BaseTileUI(grid_position=(q, r), terrain=terrain)
+    #             self.tiles.append(tile)
+    #             if (q, r) in [(1, 1), (self.rows - 2, self.cols - 2), (self.rows - 2, 1), (1, self.cols - 2)]:
+    #                 tile.mark_as_action_field()
+    #                 self.action_fields.append(tile)
+    #     self.build_hex_graph()
+    #     self.action_fields = self.choose_random_action_fields((self.rows, self.cols))
+    #     self.calculate_generate_street_network(n_edges=self.n_streets)
+    #     self.clean_map_terrains()
+    #     return self.tiles
 
-    def clean_map_terrains(self):
-        for tile in self.tiles:
-            if tile.has_street:
-                if tile.terrain not in FLAT_TERRAINS:
-                    tile.terrain = self.random_terrain(flat=True, weights=self.terrain_weights)
-                    tile.model = tile.get_model_for_terrain(tile.terrain)
-            if tile.is_action_field:
-                tile.terrain = random.choice(list(ACTION_FIELDS))
-                tile.model = tile.get_model_for_terrain(tile.terrain)
+    # def clean_map_terrains(self):
+    #     for tile in self.tiles:
+    #         if tile.has_street:
+    #             if tile.terrain not in FLAT_TERRAINS:
+    #                 tile.terrain = self.random_terrain(flat=True, weights=self.terrain_weights)
+    #                 tile.model = tile.get_model_for_terrain(tile.terrain)
+    #         if tile.is_action_field:
+    #             tile.terrain = random.choice(list(ACTION_FIELDS))
+    #             tile.model = tile.get_model_for_terrain(tile.terrain)
 
-    def normalize_weights(self, raw_weights):
-        total = sum(raw_weights.values())
-        return {k: v / total for k, v in raw_weights.items()} if total else raw_weights
+    # def normalize_weights(self, raw_weights):
+    #     total = sum(raw_weights.values())
+    #     return {k: v / total for k, v in raw_weights.items()} if total else raw_weights
 
-    def distance(self, tile1, tile2):
-        x1, y1, z1 = tile1.position
-        x2, y2, z2 = tile2.position
-        return sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+    # def distance(self, tile1, tile2):
+    #     x1, y1, z1 = tile1.position
+    #     x2, y2, z2 = tile2.position
+    #     return sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
-    def is_tile_close(self, tile1, tile2):
-        if tile1 == tile2:
-            return False
-        return self.distance(tile1, tile2) < 9.5
+    # def is_tile_close(self, tile1, tile2):
+    #     if tile1 == tile2:
+    #         return False
+    #     return self.distance(tile1, tile2) < 9.5
 
-    def choose_random_action_fields(self, size):
-        if self.n_action_fields is None:
-            n_fields = size[0] * size[1] // 20 - 2
-        else:
-            n_fields = self.n_action_fields - 4
-        possible_fields = [tile for tile in self.tiles if tile.terrain in ACTION_FIELDS]
-        action_fields = self.action_fields
-        trys = 400
-        while n_fields:
-            too_close = False
-            trys -= 1
-            if trys == 0:
-                break
-            tile = random.choice(possible_fields)
-            for action_tile in action_fields:
-                if self.is_tile_close(tile, action_tile):
-                    too_close = True
-            if not too_close:
-                action_fields.append(tile)
-                tile.mark_as_action_field()
-                possible_fields.remove(tile)
-                n_fields -= 1
-        return action_fields
+    # def choose_random_action_fields(self, size):
+    #     if self.n_action_fields is None:
+    #         n_fields = size[0] * size[1] // 20 - 2
+    #     else:
+    #         n_fields = self.n_action_fields - 4
+    #     possible_fields = [tile for tile in self.tiles if tile.terrain in ACTION_FIELDS]
+    #     action_fields = self.action_fields
+    #     trys = 400
+    #     while n_fields:
+    #         too_close = False
+    #         trys -= 1
+    #         if trys == 0:
+    #             break
+    #         tile = random.choice(possible_fields)
+    #         for action_tile in action_fields:
+    #             if self.is_tile_close(tile, action_tile):
+    #                 too_close = True
+    #         if not too_close:
+    #             action_fields.append(tile)
+    #             tile.mark_as_action_field()
+    #             possible_fields.remove(tile)
+    #             n_fields -= 1
+    #     return action_fields
 
     def angle_between_dirs(self, d1, d2, even):
         # Convert axial to angle in degrees (using simple approximation)
@@ -156,18 +156,18 @@ class MapManager:
             rotation = None
         return model, rotation
 
-    def random_terrain(self, flat=False, weights=None):
-        if flat:
-            terrain_types = list(FLAT_TERRAINS)
-        else:
-            terrain_types = list(TerrainType)[1:]  # skip TerrainType.NONE or 0-index type
+    # def random_terrain(self, flat=False, weights=None):
+    #     if flat:
+    #         terrain_types = list(FLAT_TERRAINS)
+    #     else:
+    #         terrain_types = list(TerrainType)[1:]  # skip TerrainType.NONE or 0-index type
 
-        if weights:
-            # Filter weights only for valid terrain types
-            weight_list = [weights.get(t, 1) for t in terrain_types]
-            return random.choices(terrain_types, weights=weight_list, k=1)[0]
-        else:
-            return random.choice(terrain_types)
+    #     if weights:
+    #         # Filter weights only for valid terrain types
+    #         weight_list = [weights.get(t, 1) for t in terrain_types]
+    #         return random.choices(terrain_types, weights=weight_list, k=1)[0]
+    #     else:
+    #         return random.choice(terrain_types)
 
     @classmethod
     def update(cls, action):
@@ -395,8 +395,7 @@ class MapManager:
     def from_dict(self, data):
         self.tiles = []
         for tile_data in data['tiles']:
-            tile = BaseTileUI(**tile_data)
-            tile.from_dict(tile_data)
+            tile = BaseTileUI(tile_data)
             self.tiles.append(tile)
         self.action_fields = [self.get_tile_by_grid_position(pos) for pos in data['action_fields']]
         self.street_network = nx.from_dict_of_lists(data['street_network'])

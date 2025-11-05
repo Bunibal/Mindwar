@@ -3,4 +3,4 @@ from server.lobby.lobby_manager import LobbyManager
 
 
 LOBBY_MANAGER = LobbyManager()
-GAME_MANAGER = GameManager()
+GAME_MANAGER = GameManager(LOBBY_MANAGER)

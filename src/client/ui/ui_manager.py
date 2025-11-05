@@ -1,11 +1,12 @@
 from ursina import *
 import ast
 
+from client.ui.ui_game_state import GameStateUI
 from entities.factions.base_faction import BaseFaction
 from entities.factions.base_faction import FactionType
 from entities.tiles.terrain_type import TerrainType
 from entities.units.base_unit import BaseUnitUI, UnitType
-from map.map_manager import MapManager
+from map.map_manager import MapManagerUI
 
 
 class UIManager:
@@ -33,6 +34,9 @@ class UIManager:
         self.is_connected = False
         
         self.waiting_to_connect = False
+
+        self.map_manager = MapManagerUI()
+        self.gamestate = GameStateUI()
     def start_menu(self):
         window.title = "Mindwar - Main Menu"
         self.menu_panel = Entity(
@@ -425,29 +429,9 @@ class UIManager:
         self.map_load_filepath = filepath
 
     def ui_start_game(self):
-        # get factions chosen
-        if self.is_prepare_random_map:
-            self.game_manager.generate_random_map(
-                rows=int(self.row_input.text),
-                cols=int(self.col_input.text),
-                n_action_fields=int(self.action_field_input.text),
-                n_streets=int(self.edge_input.text),
-                weights={
-                    terrain: float(input_field.text)
-                    for terrain, input_field in self.terrain_weight_inputs.items()
-                }
-            )
-            self.game_manager.start_game_locally()
-            self.is_prepare_random_map = False
-        elif self.map_load_filepath:
-            self.map_load_filepath = None
-            self.game_manager.load_selected_map(self.map_load_filepath)
-            self.game_manager.start_game_locally()
-        else:
-            self.clear_ui()
-            self.game_manager.generate_random_map()
-            self.center_camera(self.game_manager.map_manager.rows, self.game_manager.map_manager.cols)
-            self.game_manager.start_game_locally()
+        self.clear_ui()
+        self.map_manager
+        self.center_camera(self.map_manager.rows, self.map_manager.cols)
 
     def game_ui(self):
         self.ui_elements = []
@@ -1119,7 +1103,12 @@ class UIManager:
         self.ui_start_game()
         # Additional setup if needed
 
-
+    def game_state_received(self, game_state: dict):
+        """Called when server sends updated game state"""
+        print("Received updated game state from server")
+        
+        self.map_manager.from_dict(game_state.get('map'))
+        self.gamestate.load_game_state(game_state)
 
 def input_handle(key, ui_manager: UIManager):
     pass

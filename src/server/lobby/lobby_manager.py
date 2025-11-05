@@ -147,13 +147,16 @@ class LobbyManager:
         lobby = self._get_lobby_from_player(player)
         if lobby is not None:
             if lobby.lobby_status != LobbyStatus.IN_GAME:
-                game_manager.start_new_game({p.player_id: p.faction for p in lobby.players})
+                new_id = game_manager.start_new_game({p.player_id: p.faction for p in lobby.players}, lobby.lobby_id)
                 lobby.lobby_status = LobbyStatus.IN_GAME
                 logger.info(f"Game started for lobby {lobby.lobby_name} by host {player.player_id}.")
-                return True
+                return True, new_id
         else:
             logger.warning(f"Player {player.player_id} is not in a lobby.")
             raise ValueError("Player is not in a lobby.")
-        return False
+        return False, None
+    
+    def get_lobby_by_id(self, lobby_id):
+        return self.lobbies.get(lobby_id, None)
         
 
