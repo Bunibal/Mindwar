@@ -18,6 +18,7 @@ CARDS_DIR=full_path("assets/models/cards")
 UNITS_DIR=full_path("assets/models/units")
 CARDS=full_path("configs/cards.json")
 FACTION_CONFIGS=full_path("configs/factions_config.json")
+UI_ASSETS_DIR=full_path("assets/ui")
 
 if __name__ == "__main__":
     print(HEX_TILES_DIR)

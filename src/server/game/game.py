@@ -35,7 +35,7 @@ class Game:
                     for unit_type in UnitType:
                         for i in range(config[unit_type.name]):
                             for action_field in self.map_manager.action_fields:
-                                unit = BaseUnitLogic(player_id, unit_type, grid_position=action_field.grid_position
+                                unit = BaseUnitLogic(faction.faction_type, unit_type, grid_position=action_field.grid_position
                                                 )  # parent=player
                                 self.add_unit(player_id, unit)
                 else:
@@ -94,7 +94,7 @@ class Game:
     def serialize_unit(self, unit: BaseUnitLogic):
         return {
             "faction": unit.faction,
-            "type": unit.type.name,
+            "unit_type": unit.type.name,
             "grid_position": unit.grid_position
         }
     

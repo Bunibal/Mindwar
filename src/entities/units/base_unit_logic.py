@@ -17,7 +17,7 @@ class BaseUnitLogic:
                  grid_position: tuple = (0, 0)):
         self.grid_position = grid_position
         self.type = unit_type
-        self.faction = faction.lower()
+        self.faction = faction
         self.moves_left = 2
         print(f"Unit created: {self}")
         self.on_the_map = True

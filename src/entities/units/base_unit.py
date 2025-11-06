@@ -15,15 +15,17 @@ class UnitType(Enum):
 
 
 class BaseUnitUI(Entity):
-    def __init__(self, properties: dict, scale=19, rotation=(90, 0, 180), **kwargs):
+    def __init__(self, properties: dict, scale=3, rotation=(90, 0, 180), **kwargs):
         for key, value in properties.items():
+            if key == "unit_type":
+                value = UnitType[value]
             setattr(self, key, value)  ## Passed from JSON respresentation of the logic object
         self.color = color.white
-        self.position = world_calculations.grid_to_world(*self.grid_position) 
+        position = world_calculations.grid_to_world(*self.grid_position) 
         super().__init__(
             model=self.get_model_for_unit(self.unit_type, self.faction),
             scale=scale,
-            position=self.position,
+            position=position,
             origin=(0, 0),
             rotation=rotation,
             **kwargs
@@ -34,13 +36,10 @@ class BaseUnitUI(Entity):
         print(f"Unlit: {self.unlit}")
 
     @staticmethod
-    def get_model_for_unit(unit_type: UnitType, faction: str):
+    def get_model_for_unit(unit_type: UnitType, faction_name: str):
         unit_type_name = unit_type.name.lower()
-        return f"{settings.UNITS_DIR}/{faction}/{unit_type_name}.glb"
 
-    # def move_unit(self, new_position: tuple):
-    #     self.grid_position = new_position
-    #     self.position = world_calculations.grid_to_world(*new_position)
+        return f"{settings.UNITS_DIR}/{faction_name.lower()}/{unit_type_name}.glb"
 
     def destroy_unit(self):
         self.disable()

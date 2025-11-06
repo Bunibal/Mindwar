@@ -7,6 +7,7 @@ from entities.factions.base_faction import FactionType
 from entities.tiles.terrain_type import TerrainType
 from entities.units.base_unit import BaseUnitUI, UnitType
 from map.map_manager import MapManagerUI
+import settings
 
 
 class UIManager:
@@ -42,7 +43,7 @@ class UIManager:
         self.menu_panel = Entity(
             parent=camera.ui,
             model='quad',
-            texture='../assets/ui/menu_background.png',
+            texture=f'{settings.UI_ASSETS_DIR}/menu_background.png',
             scale=(1.6, 0.9),
             color=color.rgba(50, 50, 50, 180),
             position=(0, 0, 0),
@@ -871,8 +872,9 @@ class UIManager:
             scale=1,
             color=color.black
         )
+        def_value = f"My Lobby {len(self.current_lobbies) + 1}"
         self.lobby_name_input = InputField(
-            default_value='My Lobby',
+            default_value=def_value,
             parent=panel,
             x=0.1,
             y=0.05,

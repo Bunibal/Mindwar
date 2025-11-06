@@ -51,8 +51,6 @@ class BaseTileUI(Button):
 
     @staticmethod
     def get_model_for_terrain(terrain):
-        print(os.getcwd())
-        print(terrain)
         return {
             TerrainType.GRASSLAND: f'{settings.HEX_TILES_DIR}/hex_grass.glb',
             TerrainType.FOREST: f'{settings.HEX_TILES_DIR}/hex_forest.glb',

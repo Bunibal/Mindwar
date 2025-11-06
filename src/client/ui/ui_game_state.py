@@ -19,7 +19,7 @@ class GameStateUI:
 
     def create_unit_models(self):
         self.units = []
-        for unit_data in self.units:
+        for unit_data in self.unit_data:
             unit = BaseUnitUI(unit_data)
             self.units.append(unit)
     
