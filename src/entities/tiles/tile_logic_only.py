@@ -1,4 +1,3 @@
-import settings
 from entities.tiles.feature_type import FeatureType
 from entities.tiles.terrain_type import TerrainType
 

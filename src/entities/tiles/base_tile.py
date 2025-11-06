@@ -9,8 +9,8 @@ class BaseTileUI(Button):
     def __init__(self, properties:dict):
         for key, value in properties.items():
             setattr(self, key, value) ## Passed from JSON respresentation of the logic object
-
-        model = self.get_model_for_terrain(properties["terrain"])
+        self.terrain = TerrainType[self.terrain]
+        model = self.get_model_for_terrain(self.terrain)
         position = self.hex_to_world(*properties["grid_position"])
         
 
@@ -51,14 +51,16 @@ class BaseTileUI(Button):
 
     @staticmethod
     def get_model_for_terrain(terrain):
+        print(os.getcwd())
+        print(terrain)
         return {
-            TerrainType.GRASSLAND: f'{settings.HEX_TILES_DIR}\\hex_grass.glb',
+            TerrainType.GRASSLAND: f'{settings.HEX_TILES_DIR}/hex_grass.glb',
             TerrainType.FOREST: f'{settings.HEX_TILES_DIR}/hex_forest.glb',
             TerrainType.WETLAND: f'{settings.HEX_TILES_DIR}/hex_wetland.glb',
             TerrainType.MOUNTAIN: f'{settings.HEX_TILES_DIR}/hex_mountain.glb',
             TerrainType.DESERT: f'{settings.HEX_TILES_DIR}/hex_desert.glb',
             TerrainType.WATER: f'{settings.HEX_TILES_DIR}/hex_water.glb',
-        }.get(terrain, f'{settings.HEX_TILES_DIR}\\hex_grass.glb')
+        }.get(terrain, f"../../../{settings.HEX_TILES_DIR}/hex_grass.glb")#f'{settings.HEX_TILES_DIR}/hex_grass.glb')
 
     @staticmethod
     def get_terrain_height(terrain):

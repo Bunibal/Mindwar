@@ -1,7 +1,6 @@
 from enum import Enum, auto
 
 from entities.factions.base_faction import FactionType
-import settings
 from utils import world_calculations
 
 

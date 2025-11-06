@@ -6,7 +6,6 @@ import random
 import networkx as nx
 from matplotlib import pyplot as plt
 
-import settings
 from entities.tiles.tile_logic_only import BaseTileLogic
 from entities.tiles.feature_type import ACTION_FIELDS
 from entities.tiles.feature_type import FLAT_TERRAINS
