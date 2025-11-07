@@ -2,7 +2,7 @@ from enum import Enum
 
 from ursina import Entity, color
 
-import settings
+#import settings
 from utils import world_calculations
 
 

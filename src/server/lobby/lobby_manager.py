@@ -147,7 +147,9 @@ class LobbyManager:
         lobby = self._get_lobby_from_player(player)
         if lobby is not None:
             if lobby.lobby_status != LobbyStatus.IN_GAME:
-                new_id = game_manager.start_new_game({p.player_id: p.faction for p in lobby.players}, lobby.lobby_id)
+                new_id = game_manager.start_new_game(chosen_factions = {p.player_id: p.faction for p in lobby.players},
+                                                     connections = {p.player_id:p.connection for p in lobby.players},
+                                                      lobby_id = lobby.lobby_id)
                 lobby.lobby_status = LobbyStatus.IN_GAME
                 logger.info(f"Game started for lobby {lobby.lobby_name} by host {player.player_id}.")
                 return True, new_id

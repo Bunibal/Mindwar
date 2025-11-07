@@ -71,9 +71,7 @@ def main():
 
 
     def input(key):
-        if key == 's':
-            return
-            peer.message(peer.get_connections()[0], "Hello, World!")
+        UI_MANAGER.input_handle(key)
     def update():
         peer.update()
 

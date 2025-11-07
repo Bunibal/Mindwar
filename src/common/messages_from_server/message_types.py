@@ -7,5 +7,6 @@ class MessageType(Enum):
     LOBBY_LIST = (send_lobby_list,) # Enum works very strange when the value is a function
     GAME_STARTED = (game_started,)
     GAME_STATE = (game_state_received,)
+    GAME_EVENTS = (game_events_received,)
     ERROR = ()
     TEXT_MESSAGE = ()

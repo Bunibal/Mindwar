@@ -1,9 +1,10 @@
 import uuid
 from entities.factions.base_faction import BaseFaction, FactionType
 from entities.units.base_unit_logic import UnitType, BaseUnitLogic
+from common.messages_from_server.game_events import GameEventType
 from server.gamestate import GameState
 from map.map_manager_logic import MapManagerLogic
-
+from utils.logger import logger
 
 class Game:
     def __init__(self, factions:dict):
@@ -14,6 +15,7 @@ class Game:
         self.uuid = uuid.uuid4()
         self.gamestate = GameState()
         self.map_manager = None
+        self.event_queue = []
 
 
     def start_game(self):
@@ -93,11 +95,39 @@ class Game:
     
     def serialize_unit(self, unit: BaseUnitLogic):
         return {
+            "unit_id": unit.unit_id,
             "faction": unit.faction,
             "unit_type": unit.type.name,
             "grid_position": unit.grid_position
         }
     
+    def _get_unit_by_id(self, unit_id):
+        for unit in self.units:
+            if unit.unit_id == unit_id:
+                return unit
+        return None
+    
+    def ga_move_unit(self, unit_id, new_grid_position):
+        # Find the unit by its ID
+        unit = self._get_unit_by_id(unit_id)
+        if unit:
+            self.event_move_unit(unit, new_grid_position)
+            return True
+        else:
+            logger.error(f"Unit with id '{unit_id}' not found.")
+
+    def event_move_unit(self, unit, new_grid_position):
+        unit.grid_position = new_grid_position
+        self.event_queue.append({
+            "event_type": GameEventType.MOVE_UNIT,
+            "unit_id": unit.id,
+            "new_grid_position": new_grid_position
+        })
+
+    def pop_event_queue(self):
+        events = tuple(self.event_queue)
+        self.event_queue.clear()
+        return events
 
 
     def build_action(self):

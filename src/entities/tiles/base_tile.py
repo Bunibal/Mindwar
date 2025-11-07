@@ -48,6 +48,7 @@ class BaseTileUI(Button):
             print(f"Street rotation: {self.street_rotation}")
             print(f"Street directions: {self.street_dirs}")
             print(f"even: {self.grid_position[0] % 2 == 0}")
+        
 
     @staticmethod
     def get_model_for_terrain(terrain):

@@ -36,8 +36,11 @@ class UIManager:
         
         self.waiting_to_connect = False
 
+        # For ingame
         self.map_manager = MapManagerUI()
-        self.gamestate = GameStateUI()
+        self.gamestate = GameStateUI(self)
+        self.clicked_unit = None
+
     def start_menu(self):
         window.title = "Mindwar - Main Menu"
         self.menu_panel = Entity(
@@ -1112,5 +1115,17 @@ class UIManager:
         self.map_manager.from_dict(game_state.get('map'))
         self.gamestate.load_game_state(game_state)
 
-def input_handle(key, ui_manager: UIManager):
-    pass
+    def select_unit(self, unit):
+        self.clicked_unit = unit
+
+    def ga_move_unit(self, unit, grid_pos):
+        print(f"Requesting move of unit {unit.unit_id} to {grid_pos}")
+        self.rpc_peer.move_unit(self.get_server(), unit.unit_id, grid_pos)
+
+    def move_unit_event(self, unit_id, grid_pos):
+        self.gamestate.move_unit_by_id(unit_id, grid_pos)
+
+    def input_handle(self, key):
+        if key == "s":
+            for unit in self.gamestate.units:
+                self.ga_move_unit(unit, (unit.grid_x + 1, unit.grid_y))
