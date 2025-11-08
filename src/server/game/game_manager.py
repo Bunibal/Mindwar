@@ -30,12 +30,12 @@ class GameManager:
     def end_turn(self, game_id):
         self.games[game_id].end_turn()
 
-    def ga_move_unit(self, connection, unit_id, new_grid_position):
+    def ga_move_unit(self, connection, unit_id_str:str, new_grid_position):
         game_id = self.connections_to_games.get(connection, None)
         if game_id:
             game = self.games.get(game_id, None)
             if game:
-                game.ga_move_unit(unit_id, new_grid_position)
+                game.ga_move_unit(unit_id_str, new_grid_position)
                 return game.pop_event_queue()
             else:
                 logger.error(f"Game with id '{game_id}' not found for connection {connection}.")

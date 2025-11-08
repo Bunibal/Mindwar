@@ -23,14 +23,15 @@ class BaseUnitUI(Entity):
         
         self.ui_manager = ui_manager
         self.color = color.white
-        self.grid_x, self.grid_y = self.grid_position
         position = world_calculations.grid_to_world(*self.grid_position) 
         super().__init__(
+            parent=scene,
             model=self.get_model_for_unit(self.unit_type, self.faction),
             scale=scale,
             position=position,
-            origin=(0, 0),
+            #origin=(0, 0),
             rotation=rotation,
+            color = color.white,
             **kwargs
         )
         print(f"Unit created: {self.model}")
@@ -44,6 +45,14 @@ class BaseUnitUI(Entity):
 
         return f"{settings.UNITS_DIR}/{faction_name.lower()}/{unit_type_name}.glb"
 
+    @property
+    def grid_x(self):
+        return self.grid_position[0]
+    
+    @property
+    def grid_y(self):
+        return self.grid_position[1]
+    
     def destroy_unit(self):
         self.disable()
         self.delete()
@@ -51,5 +60,8 @@ class BaseUnitUI(Entity):
     def on_click(self):
         print(f"Clicked unit at grid position: {self.grid_position}")
 
+    def move_to(self, new_grid_position: tuple[int, int]):
+        self.grid_position = new_grid_position
+        self.position = world_calculations.grid_to_world(*new_grid_position)
     def __str__(self):
         return f"Unit Entity (unit_type={self.type}, unit_faction={self.faction}, grid_position={self.grid_position})"

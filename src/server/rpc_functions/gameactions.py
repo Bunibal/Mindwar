@@ -17,7 +17,7 @@ def end_turn(connection, time_received):
 
 
 @rpcreg
-def move_unit(connection, time_received, unit_id: int, new_grid_position: tuple[int, int]):
+def move_unit(connection, time_received, unit_id: str, new_grid_position: tuple[int, int]):
     print(f"Player {connection.address} requests to move unit {unit_id} to {new_grid_position}")
     events = GAME_MANAGER.ga_move_unit(connection, unit_id, new_grid_position)
     if events:

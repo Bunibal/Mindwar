@@ -102,25 +102,27 @@ class Game:
         }
     
     def _get_unit_by_id(self, unit_id):
+        if isinstance(unit_id, str):
+            unit_id = uuid.UUID(unit_id)
         for unit in self.units:
             if unit.unit_id == unit_id:
                 return unit
         return None
     
-    def ga_move_unit(self, unit_id, new_grid_position):
+    def ga_move_unit(self, unit_id_str, new_grid_position):
         # Find the unit by its ID
-        unit = self._get_unit_by_id(unit_id)
+        unit = self._get_unit_by_id(unit_id_str)
         if unit:
             self.event_move_unit(unit, new_grid_position)
             return True
         else:
-            logger.error(f"Unit with id '{unit_id}' not found.")
+            logger.error(f"Unit with id '{unit_id_str}' not found.")
 
     def event_move_unit(self, unit, new_grid_position):
         unit.grid_position = new_grid_position
         self.event_queue.append({
             "event_type": GameEventType.MOVE_UNIT,
-            "unit_id": unit.id,
+            "unit_id": unit.unit_id,
             "new_grid_position": new_grid_position
         })
 

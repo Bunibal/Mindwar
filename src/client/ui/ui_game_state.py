@@ -25,7 +25,7 @@ class GameStateUI:
         for unit_data in self.unit_data:
             unit = BaseUnitUI(self.ui_manager, unit_data)
             self.units.append(unit)
-            self.units_by_id[unit.id] = unit
+            self.units_by_id[unit.unit_id] = unit
 
     def move_unit_by_id(self, unit_id: int, new_grid_position: tuple[int, int]):
         unit = self.units_by_id.get(unit_id, None)

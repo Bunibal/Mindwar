@@ -74,6 +74,15 @@ def main():
         UI_MANAGER.input_handle(key)
     def update():
         peer.update()
+        # Simple camera controls
+        if held_keys['w']:
+            camera.position += camera.forward * time.dt * 3
+        if held_keys['s']:
+            camera.position -= camera.forward * time.dt * 3
+        if held_keys['a']:
+            camera.position -= camera.right * time.dt * 3
+        if held_keys['d']:
+            camera.position += camera.right * time.dt * 3
 
 
     app.run()
