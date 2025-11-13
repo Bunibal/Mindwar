@@ -6,12 +6,13 @@ from entities.tiles.terrain_type import TerrainType
 
 
 class BaseTileUI(Button):
-    def __init__(self, properties:dict):
+    def __init__(self, properties:dict, ui_manager):
         for key, value in properties.items():
             setattr(self, key, value) ## Passed from JSON respresentation of the logic object
         self.terrain = TerrainType[self.terrain]
         model = self.get_model_for_terrain(self.terrain)
         position = self.hex_to_world(*properties["grid_position"])
+        self.ui_manager = ui_manager
         
 
         super().__init__(
@@ -48,6 +49,7 @@ class BaseTileUI(Button):
             print(f"Street rotation: {self.street_rotation}")
             print(f"Street directions: {self.street_dirs}")
             print(f"even: {self.grid_position[0] % 2 == 0}")
+        self.ui_manager.clicked_on_tile(self.grid_position)
         
 
     @staticmethod

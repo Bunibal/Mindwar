@@ -9,7 +9,6 @@ class GameStateUI:
         self.units_by_id = {}
         self.factions = {}  # player_id: faction_type
         self.game_map = None  # List of serialized map tiles
-        self.map_manager = MapManagerUI()
         self.ui_manager = ui_manager
 
     def load_game_state(self, game_state: dict):

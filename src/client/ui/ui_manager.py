@@ -37,7 +37,7 @@ class UIManager:
         self.waiting_to_connect = False
 
         # For ingame
-        self.map_manager = MapManagerUI()
+        self.map_manager = MapManagerUI(ui_manager=self)
         self.gamestate = GameStateUI(self)
         self.clicked_unit = None
 
@@ -1120,10 +1120,22 @@ class UIManager:
 
     def ga_move_unit(self, unit, grid_pos):
         print(f"Requesting move of unit {unit.unit_id} to {grid_pos}")
-        self.rpc_peer.move_unit(self.get_server(), unit.unit_id, grid_pos)
+        self.rpc_peer.move_unit(self.get_server(), unit.unit_id, (int(grid_pos[0]), int(grid_pos[1])))
 
     def move_unit_event(self, unit_id, grid_pos):
         self.gamestate.move_unit_by_id(unit_id, grid_pos)
+
+    def clicked_on_tile(self, grid_position):
+        if self.clicked_unit:
+            print(f"Moving unit {self.clicked_unit.unit_id} to {grid_position}")
+            self.ga_move_unit(self.clicked_unit, grid_position)
+            self.clicked_unit = None
+        else:
+            for unit in self.gamestate.units:
+                if unit.grid_position == grid_position:
+                    print(f"Selected unit {unit.unit_id} at {grid_position}")
+                    self.select_unit(unit)
+                    break
 
     def input_handle(self, key):
         if key == "s":

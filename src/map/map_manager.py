@@ -16,7 +16,8 @@ HEX_DIRECTIONS_ODD = [(0, 1), (-1, 1), (-1, 0), (0, -1), (1, 0), (1, 1)]
 
 
 class MapManagerUI:
-    def __init__(self, rows=8, cols=6, n_action_fields=None, n_streets=None, terrain_weights=None):
+    def __init__(self, rows=8, cols=6, n_action_fields=None, n_streets=None, terrain_weights=None,
+                 ui_manager=None):
         self.terrain_weights = terrain_weights
         if terrain_weights is not None:
             self.terrain_weights = self.normalize_weights(terrain_weights)
@@ -28,9 +29,10 @@ class MapManagerUI:
         self.rows = rows
         self.cols = cols
         self.tiles = []
+        self.ui_manager = ui_manager
 
-    # def generate_map(self):
     #     for q in range(self.rows):
+    # def generate_map(self):
     #         for r in range(self.cols):
     #             terrain = self.random_terrain(weights=self.terrain_weights)
     #             tile = BaseTileUI(grid_position=(q, r), terrain=terrain)
@@ -395,7 +397,7 @@ class MapManagerUI:
     def from_dict(self, data):
         self.tiles = []
         for tile_data in data['tiles']:
-            tile = BaseTileUI(tile_data)
+            tile = BaseTileUI(tile_data, self.ui_manager)
             self.tiles.append(tile)
         self.action_fields = [self.get_tile_by_grid_position(pos) for pos in data['action_fields']]
         self.street_network = nx.from_dict_of_lists(data['street_network'])

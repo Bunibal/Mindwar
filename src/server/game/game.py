@@ -120,11 +120,11 @@ class Game:
 
     def event_move_unit(self, unit, new_grid_position):
         unit.grid_position = new_grid_position
-        self.event_queue.append({
-            "event_type": GameEventType.MOVE_UNIT,
-            "unit_id": unit.unit_id,
-            "new_grid_position": new_grid_position
-        })
+        params  = {"unit_id": str(unit.unit_id), "new_grid_position": new_grid_position}
+        self.add_event_to_queue(GameEventType.MOVE_UNIT, params)
+
+    def add_event_to_queue(self, event_type: GameEventType, parameters: dict):
+        self.event_queue.append({"event_type": event_type, **parameters})
 
     def pop_event_queue(self):
         events = tuple(self.event_queue)
