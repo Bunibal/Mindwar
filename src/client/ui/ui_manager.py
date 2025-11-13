@@ -434,10 +434,7 @@ class UIManager:
 
     def ui_start_game(self):
         self.clear_ui()
-        self.map_manager
         self.center_camera(self.map_manager.rows, self.map_manager.cols)
-
-    def game_ui(self):
         self.ui_elements = []
         toolbar_bg = Entity(
             parent=camera.ui,
@@ -450,7 +447,7 @@ class UIManager:
 
         # === Player Turn Text ===
         self.turn_info = Text(
-            text=f"{self.game_manager.current_player.name} – potential name's Turn",
+            text=f"",
             parent=camera.ui,
             position=(-0.6, -0.43),
             origin=(-0.5, 0),
@@ -458,6 +455,7 @@ class UIManager:
             color=color.white
         )
         self.ui_elements.append(self.turn_info)
+        return
 
         self.resources_info = Entity(
             parent=camera.ui,
@@ -497,11 +495,11 @@ class UIManager:
 
     def update_game_ui(self):
         self.update_turn_info()
-        self.update_resources_info()
+        #self.update_resources_info()
 
     def update_turn_info(self):
         if hasattr(self, 'turn_info') and self.turn_info:
-            self.turn_info.text = f"{self.game_manager.current_player.name} – potential name's Turn"
+            self.turn_info.text = f"{self.get_current_player_name_and_faction()[0]}'s Turn"
 
     def update_resources_info(self):
         if hasattr(self, "resources_info") and self.resources_info:
@@ -1042,6 +1040,7 @@ class UIManager:
     def lobby_info_received(self, lobby_info: dict):
         """Called when server sends lobby info"""
         print(f"Received lobby info: {lobby_info}")
+        self.lobby_info = lobby_info
         text = "Lobby Info:\n"
         for key, value in lobby_info.items():
             text += f"{key}: {value}\n"
@@ -1114,6 +1113,13 @@ class UIManager:
         
         self.map_manager.from_dict(game_state.get('map'))
         self.gamestate.load_game_state(game_state)
+        self.update_game_ui()
+
+
+    def turn_ended(self, new_player_id):
+        print("Turn ended, updating game state")
+        self.gamestate.end_turn(new_player_id)
+        self.update_game_ui()
 
     def select_unit(self, unit):
         self.clicked_unit = unit
@@ -1136,6 +1142,12 @@ class UIManager:
                     print(f"Selected unit {unit.unit_id} at {grid_position}")
                     self.select_unit(unit)
                     break
+
+    def get_current_player_name_and_faction(self):
+        self.current_player_id = self.gamestate.current_player
+        for player in self.lobby_info['players']:
+            if player["player_id"] == self.current_player_id:
+                return player["name"], player["faction"]
 
     def input_handle(self, key):
         if key == "s":

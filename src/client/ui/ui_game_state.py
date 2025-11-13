@@ -12,11 +12,15 @@ class GameStateUI:
         self.ui_manager = ui_manager
 
     def load_game_state(self, game_state: dict):
+        self.players = game_state.get("players", {})
         self.current_player = game_state.get("current_player")
         self.unit_data = game_state.get("units", [])
         self.factions = game_state.get("factions", {})
         self.game_map = game_state.get("map", [])
         self.create_unit_models()
+
+    def end_turn(self, new_player):
+        self.current_player = new_player
 
     def create_unit_models(self):
         self.units = []

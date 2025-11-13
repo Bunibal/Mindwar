@@ -121,9 +121,10 @@ def press_start_button(connection, time_received):
     print(f"Player {connection.address} pressed start button")
     # Check if all players are ready
     # If yes, start game
-    success, game_id = LOBBY_MANAGER.press_start_button(connection, GAME_MANAGER)
+    success, game_id, lobby_id = LOBBY_MANAGER.press_start_button(connection, GAME_MANAGER)
     if success:
         send_data(connection, MessageType.GAME_STARTED, "THISISTHUGAMESTATE", send_to_lobby=True)
+        send_data(connection, MessageType.LOBBY_INFO, LOBBY_MANAGER.get_lobby_info(connection, lobby_id), send_to_lobby=True)
         send_data(connection, MessageType.GAME_STATE, GAME_MANAGER.get_gamestate_serialized(game_id), send_to_lobby=True)
 
 

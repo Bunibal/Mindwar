@@ -152,11 +152,11 @@ class LobbyManager:
                                                       lobby_id = lobby.lobby_id)
                 lobby.lobby_status = LobbyStatus.IN_GAME
                 logger.info(f"Game started for lobby {lobby.lobby_name} by host {player.player_id}.")
-                return True, new_id
+                return True, new_id, lobby.lobby_id
         else:
             logger.warning(f"Player {player.player_id} is not in a lobby.")
             raise ValueError("Player is not in a lobby.")
-        return False, None
+        return False, None, None
     
     def get_lobby_by_id(self, lobby_id):
         return self.lobbies.get(lobby_id, None)

@@ -12,7 +12,8 @@ def rpcreg(f):
 @rpcreg
 def end_turn(connection, time_received):
     print(f"Player {connection.address} ended their turn")
-    game.end_turn()
+    GAME_MANAGER.end_turn(connection)
+    send_data(connection, MessageType.TURN_ENDED, GAME, send_to_lobby=True)
     # Notify others about new current player
 
 

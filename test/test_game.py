@@ -36,10 +36,10 @@ def test_gamestate_pass():
     encoded_state  = game.encode_game_state()
     map_manager_ui = MapManagerUI()
     map_manager_ui.from_dict(encoded_state['map'])
-    game_state_ui = GameStateUI()
+    game_state_ui = GameStateUI(None)
     game_state_ui.load_game_state(encoded_state)
 
 
 if __name__ == "__main__":
-    #test_game_initialization()
+    test_game_initialization()
     test_gamestate_pass()

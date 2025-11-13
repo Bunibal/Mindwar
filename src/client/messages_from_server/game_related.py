@@ -13,3 +13,6 @@ def execute_game_event(event, ui_manager):
     match event_type:
         case GameEventType.MOVE_UNIT:
             ui_manager.move_unit_event(event["unit_id"], event["new_grid_position"])
+
+def turn_ended(dummy, ui_manager):
+    ui_manager.turn_ended()

@@ -27,8 +27,11 @@ class GameManager:
 
         return new_game.uuid
 
-    def end_turn(self, game_id):
-        self.games[game_id].end_turn()
+    def end_turn(self, connection):
+        game_id = self.connections_to_games.get(connection, None)
+        if game_id:
+            self.games[game_id].end_turn()
+            return 
 
     def ga_move_unit(self, connection, unit_id_str:str, new_grid_position):
         game_id = self.connections_to_games.get(connection, None)

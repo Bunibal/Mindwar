@@ -22,7 +22,7 @@ class Game:
         self.game_state = "game"
         self.game_map = []
         self.prepare_game()
-        self.current_player = 0
+        self.current_player = self.players[0]
         
 
     def prepare_game(self):
@@ -49,7 +49,11 @@ class Game:
                                 player.units.append(unit)
 
     def end_turn(self):
-        self.current_player  = (self.current_player + 1) % len(self.players)
+        if self.current_player is None:
+            logger.error("Cannot end turn: current_player is None.")
+            return
+        current_index = self.players.index(self.current_player)
+        self.current_player  = self.players[(current_index + 1) % len(self.players)]
 
     def add_unit(self, player_id, unit):
         self.factions[player_id].units.append(unit)
@@ -85,6 +89,7 @@ class Game:
     def encode_game_state(self):
         units_serialized = [self.serialize_unit(unit) for unit in self.units]
         state = {
+            "players": self.players,
             "current_player": self.current_player,
             "units": units_serialized,
             "factions": {pid: faction.faction_type.name for pid, faction in self.factions.items()},

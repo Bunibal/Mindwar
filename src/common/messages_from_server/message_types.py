@@ -8,5 +8,6 @@ class MessageType(Enum):
     GAME_STARTED = (game_started,)
     GAME_STATE = (game_state_received,)
     GAME_EVENTS = (game_events_received,)
+    TURN_ENDED = (turn_ended,)
     ERROR = ()
     TEXT_MESSAGE = ()
