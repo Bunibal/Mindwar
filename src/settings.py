@@ -3,7 +3,8 @@ from ursina.application import asset_folder
 
 from utils.logger import logger
 
-parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+mindwar_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 
 parts = asset_folder.parts
 if not parts[-1] == "client" or not parts[-2] == "src":
@@ -17,8 +18,8 @@ BUILDINGS_DIR=full_path("assets/models/buildings")
 CARDS_DIR=full_path("assets/models/cards")
 UNITS_DIR=full_path("assets/models/units")
 CARDS=full_path("configs/cards.json")
-FACTION_CONFIGS=full_path("configs/factions_config.json")
 UI_ASSETS_DIR=full_path("assets/ui")
+FACTION_CONFIGS = os.path.join(mindwar_dir, 'src', 'configs', 'factions_config.json')
 
 if __name__ == "__main__":
     print(HEX_TILES_DIR)

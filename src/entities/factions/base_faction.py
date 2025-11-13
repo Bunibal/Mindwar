@@ -6,6 +6,7 @@ from ursina import *
 from entities.buildings.base_building import BaseBuilding, BuildingType
 from entities.cards.base_card import BaseCard
 from entities.units.base_unit import BaseUnitUI, UnitType
+from settings import FACTION_CONFIGS
 
 
 class FactionType(Enum):
@@ -20,7 +21,8 @@ class FactionType(Enum):
 
 
 def _load_faction_config(faction_type: FactionType) -> dict:
-    with open('src/configs/factions_config.json', 'r') as f:
+    
+    with open(FACTION_CONFIGS, 'r') as f:
         config = json.load(f)
 
     for faction in config['factions']:
