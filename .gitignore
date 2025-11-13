@@ -329,3 +329,6 @@ pyvenv.cfg
 pip-selfcheck.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python,pycharm+all,intellij+all,venv
+.vscode/launch.json
+.vscode/tasks.json
+.vscode/settings.json

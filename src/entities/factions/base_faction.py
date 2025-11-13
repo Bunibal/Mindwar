@@ -3,9 +3,9 @@ from enum import Enum, auto
 
 from ursina import *
 
-from src.entities.buildings.base_building import BaseBuilding, BuildingType
-from src.entities.cards.base_card import BaseCard
-from src.entities.units.base_unit import BaseUnit, UnitType
+from entities.buildings.base_building import BaseBuilding, BuildingType
+from entities.cards.base_card import BaseCard
+from entities.units.base_unit import BaseUnitUI, UnitType
 
 
 class FactionType(Enum):
@@ -66,7 +66,7 @@ class BaseFaction:
             print(f"Unit {unit} not found in faction {self.name}.")
 
     def create_unit(self, unit_type, position):
-        unit = BaseUnit(position, self.faction_type, unit_type)
+        unit = BaseUnitUI(position, self.faction_type, unit_type)
         self.units.append(unit)
         return unit
 
