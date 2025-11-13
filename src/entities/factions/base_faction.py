@@ -3,9 +3,9 @@ from enum import Enum, auto
 
 from ursina import *
 
-from src.entities.buildings.base_building import BaseBuilding, BuildingType
-from src.entities.cards.base_card import BaseCard
-from src.entities.units.base_unit import BaseUnitUI, UnitType
+from entities.buildings.base_building import BaseBuilding, BuildingType
+from entities.cards.base_card import BaseCard
+from entities.units.base_unit import BaseUnitUI, UnitType
 
 
 class FactionType(Enum):

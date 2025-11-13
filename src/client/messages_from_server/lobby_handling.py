@@ -9,3 +9,7 @@ def send_lobby_list(lobbies: list[str], ui_manager):
 
     ui_manager.lobby_list_received(lobbies)
     # Update local lobby list UIˆ
+
+def game_started(game_state: str, ui_manager):
+    print("Game has started!")
+    ui_manager.game_started(game_state)

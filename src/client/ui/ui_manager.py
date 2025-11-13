@@ -1,15 +1,17 @@
 from ursina import *
 import ast
 
-from src.entities.factions.base_faction import BaseFaction
-from src.entities.factions.base_faction import FactionType
-from src.entities.tiles.terrain_type import TerrainType
-from src.entities.units.base_unit import BaseUnitUI, UnitType
-from src.map.map_manager import MapManager
+from client.ui.ui_game_state import GameStateUI
+from entities.factions.base_faction import BaseFaction
+from entities.factions.base_faction import FactionType
+from entities.tiles.terrain_type import TerrainType
+from entities.units.base_unit import BaseUnitUI, UnitType
+from map.map_manager import MapManagerUI
+import settings
 
 
 class UIManager:
-    def __init__(self, rcp_peer):
+    def __init__(self, rpc_peer):
         self.is_prepare_random_map = None
         self.map_load_filepath = None
         self.slots = None
@@ -17,7 +19,7 @@ class UIManager:
         self.action_field_input = None
         self.edge_input = None
         self.row_input = None
-        self.rcp_peer = rcp_peer
+        self.rpc_peer = rpc_peer
         self.menu_panel = None
         self.editor_toolbar = None
         self.popup = None
@@ -28,17 +30,23 @@ class UIManager:
         self.current_lobbies = []
         self.current_lobby_id = None
         self.player_id = None
-        self.server_ip = "192.168.1.179"
+        self.server_ip = "localhost"
         self.server_port = 8080
         self.is_connected = False
         
         self.waiting_to_connect = False
+
+        # For ingame
+        self.map_manager = MapManagerUI()
+        self.gamestate = GameStateUI(self)
+        self.clicked_unit = None
+
     def start_menu(self):
         window.title = "Mindwar - Main Menu"
         self.menu_panel = Entity(
             parent=camera.ui,
             model='quad',
-            texture='../assets/ui/menu_background.png',
+            texture=f'{settings.UI_ASSETS_DIR}/menu_background.png',
             scale=(1.6, 0.9),
             color=color.rgba(50, 50, 50, 180),
             position=(0, 0, 0),
@@ -139,7 +147,7 @@ class UIManager:
         }[label]
 
     def get_server(self, raise_error=True):
-        conns = self.rcp_peer.get_connections()
+        conns = self.rpc_peer.get_connections()
         if conns:
             return conns[0]
         if raise_error:
@@ -148,7 +156,7 @@ class UIManager:
     
     def start_game_locally(self):
         print(type(self.get_server()))
-        self.rcp_peer.start_game(self.get_server())
+        self.rpc_peer.start_game(self.get_server())
 
     def quit_game(self):
         application.quit()
@@ -409,105 +417,8 @@ class UIManager:
             destroy(child)
 
     def setup_game_ui(self):
-        self.clear_ui()
-
-        # Add proper lighting for the faction selection screen
-        DirectionalLight().look_at(Vec3(1, -1, -1))
-        AmbientLight(color=color.rgba(120, 120, 120, 0.5))  # Add ambient light for better visibility
-
-        self.slots = []
-        self.factions = [BaseFaction(name=faction.name, faction_type=faction) for faction in FactionType]
-
-        title = Text("Choose Your Factions", parent=camera.ui, y=0.45, scale=2, origin=(0, 0), color=color.white)
-        start_index = [0, -1, -1, -1]
-
-        # Faction slots (up to 4)
-        for i in range(4):
-            x_pos = -0.5 + i * 0.33
-            slot = Entity(parent=camera.ui, position=(x_pos, 0), scale=(0.4, 0.6), model='quad',
-                          color=color.gray.tint(0.2), z=0.1)
-
-            slot.current_faction_index = start_index[i]
-
-            # Faction name label
-            slot.faction_label = Text(
-                text=self.factions[slot.current_faction_index].name,
-                parent=slot,
-                y=0.35,
-                scale=1.5,
-                origin=(0, 0),
-                color=color.black,
-                z=-0.1
-            )
-
-            # Arrow buttons
-            left = Button(text='Back', parent=slot, position=(-0.18, -0.35, -0.1), scale=(0.3, 0.1), color=color.azure)
-            right = Button(text='Forward', parent=slot, position=(0.18, -0.35, -0.1), scale=(0.3, 0.1),
-                           color=color.azure)
-
-            # Model display - Remove color override here too
-            slot.model_display = BaseUnitUI(
-                position=(0, -0.1, 0.3),
-                faction=FactionType.HUMAN.name,
-                unit_type=UnitType.INFANTRY,
-                parent=scene,
-                owner=self.factions[slot.current_faction_index],
-                scale=(0.3, 0.3, 0.3),
-                rotation_y=180,
-                z=-1
-                # REMOVED any color parameter to preserve model colors
-            )
-
-            def update_model(s=slot):
-                faction = self.factions[s.current_faction_index]
-                s.faction_label.text = faction.name
-                s.model_display.owner = faction.name
-                s.model_display.model = BaseUnitUI.get_model_for_unit(slot.model_display.type, faction.name)
-                # Don't set color here either - let the model keep its original colors
-
-            left.on_click = Func(self.prev_faction, slot, update_model)
-            right.on_click = Func(self.next_faction, slot, update_model)
-
-            self.slots.append(slot)
-
-        # Control Buttons
-        button_y = -0.45
-
-        start_game_btn = Button(
-            text='Start Game',
-            position=(0.5, button_y),
-            scale=(0.25, 0.1),
-            parent=camera.ui,
-            color=color.lime,
-            on_click=self.ui_start_game_locally
-        )
-
-        back_btn = Button(
-            text='Back to Main Menu',
-            position=(-0.5, button_y),
-            scale=(0.25, 0.1),
-            parent=camera.ui,
-            color=color.red,
-            on_click=self.return_to_menu
-        )
-
-        load_map_btn = Button(
-            text='Load Map',
-            position=(0, button_y + 0.08),
-            scale=(0.2, 0.08),
-            parent=camera.ui,
-            color=color.orange,
-            on_click=self.open_load_popup
-        )
-
-        generate_map_btn = Button(
-            text='Generate Random Map',
-            position=(0, button_y),
-            scale=(0.3, 0.08),
-            parent=camera.ui,
-            color=color.cyan,
-            on_click=self.open_generate_random_map_popup
-        )
+        """Obsolete, I think"""
+        pass
 
     def prev_faction(self, slot, update_func):
         slot.current_faction_index = (slot.current_faction_index - 1) % len(self.factions)
@@ -521,41 +432,10 @@ class UIManager:
         self.close_popup()
         self.map_load_filepath = filepath
 
-    def ui_start_game_locally(self):
-        # get factions chosen
-        self.game_manager.chosen_factions = []
-        for slot in self.slots:
-            if slot.current_faction_index != -1:
-                self.game_manager.chosen_factions.append(self.factions[slot.current_faction_index])
-        self.game_manager.n_players = len(self.game_manager.chosen_factions)
-        if not self.game_manager.n_players:
-            print("⚠️ No factions selected.")
-            return
-        self.game_manager.gamestate.game_state = "game"
-        self.game_manager.gamestate.chosen_factions = self.game_manager.chosen_factions
-        self.game_manager.gamestate.n_players = self.game_manager.n_players
-        if self.is_prepare_random_map:
-            self.game_manager.generate_random_map(
-                rows=int(self.row_input.text),
-                cols=int(self.col_input.text),
-                n_action_fields=int(self.action_field_input.text),
-                n_streets=int(self.edge_input.text),
-                weights={
-                    terrain: float(input_field.text)
-                    for terrain, input_field in self.terrain_weight_inputs.items()
-                }
-            )
-            self.game_manager.start_game_locally()
-            self.is_prepare_random_map = False
-        elif self.map_load_filepath:
-            self.map_load_filepath = None
-            self.game_manager.load_selected_map(self.map_load_filepath)
-            self.game_manager.start_game_locally()
-        else:
-            self.clear_ui()
-            self.game_manager.generate_random_map()
-            self.center_camera(self.game_manager.map_manager.rows, self.game_manager.map_manager.cols)
-            self.game_manager.start_game_locally()
+    def ui_start_game(self):
+        self.clear_ui()
+        self.map_manager
+        self.center_camera(self.map_manager.rows, self.map_manager.cols)
 
     def game_ui(self):
         self.ui_elements = []
@@ -708,7 +588,7 @@ class UIManager:
             text="Name:",
             parent=self.lobby_panel,
             x = -.25,
-            y=0.,
+            y=0.35,
             scale=1,
             origin=(-0.5, 0),
             color=color.light_gray
@@ -727,7 +607,7 @@ class UIManager:
             text="Server IP:",
             parent=self.lobby_panel,
             x=-0.25,
-            y=0.35,
+            y=0.2,
             origin=(-0.5, 0),
             scale=1,
             color=color.light_gray
@@ -799,13 +679,13 @@ class UIManager:
                 self.connection_status_text.color = color.red
                 return
 
-            self.rcp_peer.start(self.server_ip, self.server_port, is_host=False)
+            self.rpc_peer.start(self.server_ip, self.server_port, is_host=False)
             self.connection_status_text.text = "Connecting..."
             self.connection_status_text.color = color.yellow
             self.waiting_to_connect = True
             self.connect_to_server_button.text = "Cancel"
         else:
-            self.rcp_peer.stop()
+            self.rpc_peer.stop()
             self.connection_status_text.text = "Connection cancelled"
             self.connection_status_text.color = color.red
             self.waiting_to_connect = False
@@ -817,6 +697,7 @@ class UIManager:
             self.waiting_to_connect = False
             self.connection_status_text.text = f"Connected to {self.server_ip}:{self.server_port}"
             self.connection_status_text.color = color.lime
+            self.rpc_peer.set_player_name(self.get_server(), self.name_input.text.strip())
             print(f"Connected to server at {self.server_ip}:{self.server_port}")
             # Show lobby browser
             invoke(self.show_lobby_browser, delay=0.5)
@@ -906,7 +787,7 @@ class UIManager:
         try:
             server = self.get_server(raise_error=False)
             if server:
-                self.rcp_peer.get_lobby_list(server)
+                self.rpc_peer.get_lobby_list(server)
                 print("Requesting lobby list from server...")
             else:
                 print("No server connection available")
@@ -994,8 +875,9 @@ class UIManager:
             scale=1,
             color=color.black
         )
+        def_value = f"My Lobby {len(self.current_lobbies) + 1}"
         self.lobby_name_input = InputField(
-            default_value='My Lobby',
+            default_value=def_value,
             parent=panel,
             x=0.1,
             y=0.05,
@@ -1059,7 +941,7 @@ class UIManager:
 
         try:
             server = self.get_server()
-            self.rcp_peer.create_lobby(server, lobby_name, max_players)
+            self.rpc_peer.create_lobby(server, lobby_name, max_players)
             print(f"Creating lobby: {lobby_name} with {max_players} max players")
             self.close_popup()
             # Refresh the lobby list after a short delay
@@ -1072,7 +954,7 @@ class UIManager:
         try:
             server = self.get_server()
             self.current_lobby_id = lobby_id
-            self.rcp_peer.join_lobby(server, lobby_id)
+            self.rpc_peer.join_lobby(server, lobby_id)
             print(f"Joining lobby {lobby_id}")
             # Show lobby detail screen
             self.show_lobby_detail()
@@ -1107,7 +989,7 @@ class UIManager:
         # Player list container
         self.lobby_player_list = Entity(parent=self.lobby_panel, y=0.1)
 
-        Text(
+        self._lobby_info_text = Text(
             text="Waiting for lobby info...",
             parent=self.lobby_player_list,
             y=0,
@@ -1145,11 +1027,26 @@ class UIManager:
             on_click=self.leave_lobby
         )
 
-        self.rcp_peer.send_lobby_info(self.get_server(), self.current_lobby_id)
+        Button(
+            text = "Start Game",
+            parent=self.lobby_panel,
+            y=-0.38,
+            x=0.6,
+            scale=(0.25, 0.08),
+            color=color.cyan,
+            on_click=self.press_start_game
+        )
 
-    def lobby_info_received(self, lobby_info: str):
+        self.rpc_peer.send_lobby_info(self.get_server(), self.current_lobby_id)
+
+    def lobby_info_received(self, lobby_info: dict):
         """Called when server sends lobby info"""
         print(f"Received lobby info: {lobby_info}")
+        text = "Lobby Info:\n"
+        for key, value in lobby_info.items():
+            text += f"{key}: {value}\n"
+        if hasattr(self, '_lobby_info_text'):
+            self._lobby_info_text.text = text
         # TODO: Parse and display lobby info
         # Update lobby_title_text and lobby_player_list
 
@@ -1157,7 +1054,7 @@ class UIManager:
         """Set player status to ready"""
         try:
             server = self.get_server()
-            self.rcp_peer.set_ready_status(server, True)
+            self.rpc_peer.set_ready_status(server, True)
             print("Set ready status: True")
         except Exception as e:
             print(f"Error setting ready status: {e}")
@@ -1166,7 +1063,7 @@ class UIManager:
         """Set player status to not ready"""
         try:
             server = self.get_server()
-            self.rcp_peer.set_ready_status(server, False)
+            self.rpc_peer.set_ready_status(server, False)
             print("Set ready status: False")
         except Exception as e:
             print(f"Error setting ready status: {e}")
@@ -1175,24 +1072,22 @@ class UIManager:
         """Leave current lobby"""
         try:
             server = self.get_server()
-            self.rcp_peer.leave_lobby(server)
+            self.rpc_peer.leave_lobby(server)
             self.current_lobby_id = None
             print("Left lobby")
             # Return to lobby browser
             self.show_lobby_browser()
         except Exception as e:
             print(f"Error leaving lobby: {e}")
+            self.disconnect_from_server()
 
     def disconnect_from_server(self):
         """Disconnect from server and return to connection screen"""
-        try:
-            # TODO: Properly close connection
-            self.is_connected = False
-            self.current_lobby_id = None
-            print("Disconnected from server")
-            self.show_connection_screen()
-        except Exception as e:
-            print(f"Error disconnecting: {e}")
+        self.rpc_peer.stop()
+        self.is_connected = False
+        self.current_lobby_id = None
+        print("Disconnected from server")
+        self.show_connection_screen()
 
     def return_from_lobby(self):
         """Return to main menu from lobby system"""
@@ -1201,8 +1096,36 @@ class UIManager:
             self.lobby_panel = None
         self.start_menu()
 
+    def press_start_game(self):
+        """Request server to start the game"""
+        server = self.get_server()
+        self.rpc_peer.press_start_button(server)
+        print("Requested to start game")
 
-def input_handle(key, ui_manager: UIManager):
-    if key == 'escape':
-        if ui_manager.game_manager.gamestate.game_state == "game":
-            ui_manager.game_exit_popup()
+    def game_started(self, game_state: dict):
+        """Called when server notifies that the game has started"""
+        print("Game has started!")
+        self.ui_start_game()
+        # Additional setup if needed
+
+    def game_state_received(self, game_state: dict):
+        """Called when server sends updated game state"""
+        print("Received updated game state from server")
+        
+        self.map_manager.from_dict(game_state.get('map'))
+        self.gamestate.load_game_state(game_state)
+
+    def select_unit(self, unit):
+        self.clicked_unit = unit
+
+    def ga_move_unit(self, unit, grid_pos):
+        print(f"Requesting move of unit {unit.unit_id} to {grid_pos}")
+        self.rpc_peer.move_unit(self.get_server(), unit.unit_id, grid_pos)
+
+    def move_unit_event(self, unit_id, grid_pos):
+        self.gamestate.move_unit_by_id(unit_id, grid_pos)
+
+    def input_handle(self, key):
+        if key == "s":
+            for unit in self.gamestate.units:
+                self.ga_move_unit(unit, (unit.grid_x + 1, unit.grid_y))

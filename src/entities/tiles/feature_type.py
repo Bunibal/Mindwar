@@ -1,6 +1,6 @@
 from enum import Enum, auto
 
-from src.entities.tiles.terrain_type import TerrainType
+from entities.tiles.terrain_type import TerrainType
 
 ACTION_FIELDS = {
     TerrainType.GRASSLAND,

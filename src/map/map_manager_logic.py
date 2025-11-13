@@ -6,17 +6,16 @@ import random
 import networkx as nx
 from matplotlib import pyplot as plt
 
-from src import settings
-from src.entities.tiles.tile_logic_only import BaseTileLogic
-from src.entities.tiles.feature_type import ACTION_FIELDS
-from src.entities.tiles.feature_type import FLAT_TERRAINS
-from src.entities.tiles.terrain_type import TerrainType
+from entities.tiles.tile_logic_only import BaseTileLogic
+from entities.tiles.feature_type import ACTION_FIELDS
+from entities.tiles.feature_type import FLAT_TERRAINS
+from entities.tiles.terrain_type import TerrainType
 
 HEX_DIRECTIONS_EVEN = [(0, 1), (-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0)]
 HEX_DIRECTIONS_ODD = [(0, 1), (-1, 1), (-1, 0), (0, -1), (1, 0), (1, 1)]
 
 
-class MapManager:
+class MapManagerLogic:
     def __init__(self, rows=8, cols=6, n_action_fields=None, n_streets=None, terrain_weights=None):
         self.terrain_weights = terrain_weights
         if terrain_weights is not None:
@@ -58,8 +57,8 @@ class MapManager:
         return {k: v / total for k, v in raw_weights.items()} if total else raw_weights
 
     def distance(self, tile1, tile2):
-        x1, y1 = tile1.position
-        x2, y2 = tile2.position
+        x1, y1 = tile1.grid_position
+        x2, y2 = tile2.grid_position
         return sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
     def is_tile_close(self, tile1, tile2):
@@ -179,10 +178,9 @@ class MapManager:
         # Step 1: Generate all candidate edges with spacing rule
         edge_candidates = []
         for a, b in itertools.combinations(tiles, 2):
+            dist = self.grid_distance(self.action_fields[a], self.action_fields[b])
             if self.grid_distance(self.action_fields[a], self.action_fields[b]) >= spacing:  # spacing rule
-                real_dist = distance(self.action_fields[a].position, self.action_fields[b].position)
-                edge_candidates.append((real_dist, a, b))
-
+                edge_candidates.append((dist, a, b))
         edge_candidates.sort()  # shortest distance first
 
         added_edges = []
@@ -203,23 +201,23 @@ class MapManager:
 
         tile_directions = self.determine_tile_directions_from_paths()
 
-        for pos, directions in tile_directions.items():
-            for tile in self.tiles:
-                if tile.grid_position == pos:
-                    tile.street_dirs = list(directions)
-                    tile.has_street = True
-                    model, rotation = self.determine_model_and_rotation(tile.street_dirs,
-                                                                        tile.grid_position[0] % 2 == 0)
-                    tile.street_rotation = rotation
-                    tile.street_entity = Entity(
-                        model=model,
-                        parent=tile,
-                        scale=1,
-                        position=(0, 0, -0.2),
-                        rotation_z=-rotation,
-                        unlit=True
-                    )
-                    break
+        # for pos, directions in tile_directions.items():
+        #     for tile in self.tiles:
+        #         if tile.grid_position == pos:
+        #             tile.street_dirs = list(directions)
+        #             tile.has_street = True
+        #             model, rotation = self.determine_model_and_rotation(tile.street_dirs,
+        #                                                                 tile.grid_position[0] % 2 == 0)
+        #             tile.street_rotation = rotation
+        #             tile.street_entity = Entity(
+        #                 model=model,
+        #                 parent=tile,
+        #                 scale=1,
+        #                 position=(0, 0, -0.2),
+        #                 rotation_z=-rotation,
+        #                 unlit=True
+        #             )
+        #             break
 
     def plot_street_graph(self, graph=None):
         if graph is None:

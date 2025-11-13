@@ -3,7 +3,7 @@ import random
 import uuid
 from enum import Enum
 
-from src.entities.factions.base_faction import FactionType
+from entities.factions.base_faction import FactionType
 
 
 class LobbyStatus(Enum):
@@ -24,7 +24,7 @@ class LobbyPlayer:
         self.player_id = str(uuid.uuid4())
         self.name = "random-" + str(random.randint(0, 9))
         self.connection = connection
-        self.faction = FactionType.NONE
+        self.faction = FactionType.HUMAN
         self.player_status = PlayerStatus.NOT_READY
 
     def to_string(self):
@@ -61,11 +61,11 @@ class Lobby:
         }
 
 
-def serialize_obj(obj):
-    if isinstance(obj, (Lobby, LobbyPlayer)):
-        return obj.to_dict()
-    raise TypeError("Type not serializable")
+# def serialize_obj(obj):
+#     if isinstance(obj, (Lobby, LobbyPlayer)):
+#         return obj.to_dict()
+#     raise TypeError("Type not serializable")
 
 
-def to_json(obj):
-    return json.dumps(serialize_obj(obj))
+# def to_json(obj):
+#     return json.dumps(serialize_obj(obj))

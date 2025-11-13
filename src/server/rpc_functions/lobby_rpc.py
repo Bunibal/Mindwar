@@ -3,12 +3,12 @@ import json
 
 import ursina.networking
 
-from src.common.messages_from_server.message_types import MessageType
-from src.server.lobby import lobby
+from common.messages_from_server.message_types import MessageType
+from server.lobby import lobby
 
 LOBBY_FUNCTIONS_TO_REGISTER = []
 
-from src.server.handler import LOBBY_MANAGER
+from server.handler import GAME_MANAGER, LOBBY_MANAGER
 
 
 def rpcreg(f):
@@ -47,7 +47,7 @@ def get_lobby_list(connection, time_received):
 @rpcreg
 def create_lobby(connection, time_received, lobby_name: str, max_players: int):
     lobby_id = LOBBY_MANAGER.create_lobby(connection, lobby_name, max_players)
-    send_data(connection, MessageType.LOBBY_INFO, lobby.to_json(LOBBY_MANAGER.lobbies[lobby_id]))
+    send_data(connection, MessageType.LOBBY_INFO, LOBBY_MANAGER.lobbies[lobby_id])
 
 
 @rpcreg
@@ -116,12 +116,16 @@ def choose_faction(connection, time_received, faction: str):
     # Notify others in lobby
 
 
-# @rpcreg
-# def press_start_button(connection, time_received):
-#     print(f"Player {connection.address} pressed start button")
-#     # Check if all players are ready
-#     # If yes, start game
-#     game.start_game()
+@rpcreg
+def press_start_button(connection, time_received):
+    print(f"Player {connection.address} pressed start button")
+    # Check if all players are ready
+    # If yes, start game
+    success, game_id = LOBBY_MANAGER.press_start_button(connection, GAME_MANAGER)
+    if success:
+        send_data(connection, MessageType.GAME_STARTED, "THISISTHUGAMESTATE", send_to_lobby=True)
+        send_data(connection, MessageType.GAME_STATE, GAME_MANAGER.get_gamestate_serialized(game_id), send_to_lobby=True)
+
 
 
 def serialize(obj):

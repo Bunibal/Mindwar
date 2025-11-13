@@ -1,6 +1,5 @@
-from src import settings
-from src.entities.tiles.feature_type import FeatureType
-from src.entities.tiles.terrain_type import TerrainType
+from entities.tiles.feature_type import FeatureType
+from entities.tiles.terrain_type import TerrainType
 
 
 class BaseTileLogic:
@@ -43,4 +42,16 @@ class BaseTileLogic:
         self.is_action_field = False
         if self.action_field_highlight:
             self.action_field_highlight = None
+
+    def to_string(self):
+        return {
+            "grid_position": self.grid_position,
+            "terrain": self.terrain.name,
+            "feature": self.feature.name,
+            "owner": self.owner,
+            "has_street": self.has_street,
+            "street_rotation": self.street_rotation,
+            "street_dirs": self.street_dirs,
+            "is_action_field": self.is_action_field
+        }
 

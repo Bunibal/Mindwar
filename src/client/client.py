@@ -3,8 +3,8 @@ from panda3d.core import loadPrcFileData, WindowProperties
 from ursina import *
 from ursina.networking import *
 
-from src.common.messages_from_server.message_types import MessageType
-from src.client.ui.ui_manager import UIManager
+from common.messages_from_server.message_types import MessageType
+from client.ui.ui_manager import UIManager
 
 # --- Panda3D Config ---
 loadPrcFileData('', 'window-title Mindwar')
@@ -29,7 +29,7 @@ def on_connect(connection, time_received):
     # Handle post-connection setup
 
 @rpc(peer)
-def send_data(connection, time_received, message_type:str, msg: str):
+def send_data(connection, time_received, message_type:str, msg:str):
     f = getattr(MessageType, message_type, None).value[0] #[0] since we have a singleton tuple
     if f:
         msg = json.loads(msg)
@@ -41,12 +41,6 @@ def send_data(connection, time_received, message_type:str, msg: str):
 @rpc(peer)
 def send_player(connection, time_received, player_info: str):
     print(f"Received player info from server: {player_info}")
-    # Update local player info
-# @rpc(peer)
-# def send_anything(connection, time_received, msg_type:str, data: str):
-#     execute(connection, time_received, msg_type, data, UI_MANAGER)
-#     print(f"Received data from server: {data}")
-    # Process received data
 
 
 def main():
@@ -77,16 +71,18 @@ def main():
 
 
     def input(key):
-        if key == 's':
-            peer.message(peer.get_connections()[0], "Hello, World!")
-        if key == 'l':
-            peer.create_lobby(peer.get_connections()[0], "Test Lobby", 4)
-        if key == "r":
-            peer.get_lobby_list(peer.get_connections()[0])
-        #input_handle(key, ui_manager)
-
+        UI_MANAGER.input_handle(key)
     def update():
         peer.update()
+        # Simple camera controls
+        if held_keys['w']:
+            camera.position += camera.forward * time.dt * 3
+        if held_keys['s']:
+            camera.position -= camera.forward * time.dt * 3
+        if held_keys['a']:
+            camera.position -= camera.right * time.dt * 3
+        if held_keys['d']:
+            camera.position += camera.right * time.dt * 3
 
 
     app.run()

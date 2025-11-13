@@ -1,8 +1,8 @@
 from enum import Enum, auto
+import uuid
 
-from src.entities.factions.base_faction import FactionType
-from src import settings
-from src.utils import world_calculations
+from entities.factions.base_faction import FactionType
+from utils import world_calculations
 
 
 class UnitType(Enum):
@@ -18,13 +18,11 @@ class BaseUnitLogic:
                  grid_position: tuple = (0, 0)):
         self.grid_position = grid_position
         self.type = unit_type
-        self.faction = faction.lower()
+        self.faction = faction
         self.moves_left = 2
-        print(f"Unit created: {self.model}")
-        print(f"Texture: {self.texture}")
-        print(f"Color: {self.color}")
-        print(f"Unlit: {self.unlit}")
+        print(f"Unit created: {self}")
         self.on_the_map = True
+        self.unit_id = uuid.uuid4()
 
     def update(self, payload):
         pass
